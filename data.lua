@@ -2,15 +2,18 @@ Data = {}
 Data.deathAnims = {
     {
         down = {"random@dealgonewrong", "idle_a"},
-        dead = {"random@crash_rescue@dead_ped", "dead_ped"}
+        dead = {"random@crash_rescue@dead_ped", "dead_ped"},
+        vehicle = {"random@crash_rescue@car_death@van", "loop"}
     },
     {
         down = {"anim@scripted@data_leak@fix_bil_ig2_chopper_crawl@prototype@", "injured_idle_ped"},
-        dead = {"missfinale_c1@", "lying_dead_player0"}
+        dead = {"missfinale_c1@", "lying_dead_player0"},
+        vehicle = {"random@crash_rescue@car_death@van", "loop"}
     },
     {
         down = {"anim@scripted@data_leak@fix_bil_ig2_chopper_crawl@prototype@", "injured_idle_ped"},
-        dead = {"misssolomon_5@end", "dead_black_ops"}
+        dead = {"misssolomon_5@end", "dead_black_ops"},
+        vehicle = {"random@crash_rescue@car_death@van", "loop"}
     }
 }
 
@@ -98,7 +101,8 @@ Data.boneSettings = {
     },
     ["LARM"] = {
         label = "Left Arm",
-        severity = 0
+        severity = 0,
+        canUseTourniquet = true,
     },
     ["LHAND"] = {
         label = "Left Hand",
@@ -111,7 +115,8 @@ Data.boneSettings = {
     ["LLEG"] = {
         label = "Left Leg",
         severity = 0,
-        causeLimp = true
+        causeLimp = true,
+        canUseTourniquet = true,
     },
     ["LFOOT"] = {
         label = "Left Foot",
@@ -120,7 +125,8 @@ Data.boneSettings = {
     },
     ["RARM"] = {
         label = "Right Arm",
-        severity = 0
+        severity = 0,
+        canUseTourniquet = true,
     },
     ["RHAND"] = {
         label = "Right Hand",
@@ -133,7 +139,8 @@ Data.boneSettings = {
     ["RLEG"] = {
         label = "Right Leg",
         severity = 0,
-        causeLimp = true
+        causeLimp = true,
+        canUseTourniquet = true,
     },
     ["RFOOT"] = {
         label = "Right Foot",
