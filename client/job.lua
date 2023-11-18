@@ -34,17 +34,34 @@ local function getBodypartDamage(part)
     return values
 end
 
+local function tableLength(t)
+    local count = 0
+    for _, _ in pairs(t) do
+        count += 1
+    end
+    return count
+end
+
 function CheckPlayerInjuries(player)
-    local info = lib.callback.await("ND_Ambulance:getInfo", nil, player)
-    if not info then
-        lib.registerMenu({
-            id = "ND_Ambulance:checkInjuries",
-            title = "Check injuries",
-            position = "top-right",
-            options = {{label = "No injuries"}}
-        })
-        lib.showMenu("ND_Ambulance:checkInjuries")
-        return
+    local state = Player(player).state
+    local info = state.injuries
+    if not info or tableLength(info) == 0 then
+        if state.isDead then
+            lib.registerMenu({
+                id = "ND_Ambulance:checkInjuries",
+                title = "Check injuries",
+                position = "top-right",
+                options = {{label = "Person dead"}}
+            })
+        else
+            lib.registerMenu({
+                id = "ND_Ambulance:checkInjuries",
+                title = "Check injuries",
+                position = "top-right",
+                options = {{label = "No injuries"}}
+            })
+        end
+        return lib.showMenu("ND_Ambulance:checkInjuries")
     end
 
     local options = {}

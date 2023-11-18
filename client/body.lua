@@ -5,6 +5,26 @@ local bleeding = 0
 local downAnim
 local deathState
 local lastSync
+local bleedOutTimer
+
+local function getInjuredBoneData(bones)
+    local data = {}
+    for bone, info in pairs(bones) do
+        if info.severity > 0 then
+            if not data[bone] then
+                data[bone] = info
+            else
+                local limb = data[bone]
+                limb.suffocating = info.suffocating
+                limb.fracture = info.fracture
+                limb.burn = info.burn
+                limb.bleeding = info.bleeding
+                limb.severity = info.severity
+            end
+        end
+    end
+    return data
+end
 
 local function setDead(ped)
     SetEntityHealth(ped, 100)
@@ -21,22 +41,28 @@ local function setDead(ped)
             Wait(10)
         end
     end)
-    LocalPlayer.state.dead = true
 end
 
-local function setDeathState(state)
+local function setDeathState(newState)
     local ped = PlayerPedId()
     if cache.vehicle then
-        state = "vehicle"
+        newState = "vehicle"
     end
-    if state == "dead" and downAnim then
+    if newState == "dead" and downAnim then
         StopAnimTask(ped, downAnim[1], downAnim[2], 1.0)
         downAnim = nil
     end
-    deathState = state
-    local dict, clip = randomDeathAnim[state][1], randomDeathAnim[state][2]
+    deathState = newState
+
+    local state = Player(cache.serverId).state
+    state:set("isDead", deathState, true)
+    state:set("injuries", getInjuredBoneData(BodyBonesDamage), true)
+    LocalPlayer.state.dead = true
+
+    local anim = randomDeathAnim[deathState]
+    local dict, clip = anim[1], anim[2]
     lib.requestAnimDict(dict)
-    TaskPlayAnim(ped, dict, clip, 1.0, 8.0, -1, 1, 0, false, false, false)
+    TaskPlayAnim(ped, dict, clip, 8.0, 8.0, -1, 1, 0, false, false, false)
     setDead(ped)
     return {dict, clip}
 end
@@ -58,11 +84,10 @@ local function hurtWalk()
 end
 
 local function updateBodyDamage()
+    if not lastSync or (GetGameTimer()-lastSync) < 5000 then return end
     lastSync = GetGameTimer()
-    Wait(5000)
-
-    if (GetGameTimer()-lastSync) < 5000 then return end
-    TriggerServerEvent("ND_Ambulance:updateInfo", BodyBonesDamage)
+    local state = Player(cache.serverId).state
+    state:set("injuries", getInjuredBoneData(BodyBonesDamage), true)
 end
 
 function GetTotalDamageType(body, damageType)
@@ -78,30 +103,30 @@ function GetTotalDamageType(body, damageType)
 end
 
 CreateThread(function()
+    local notifyInfo = {
+        id = "playerBleeding",
+        icon = "droplet",
+        iconColor = "#eb4034",
+        duration = 4000,
+        position = "bottom-right"
+    }
     while true do
         Wait(3000)
         if bleeding > 0 then
             local bleed = math.floor(bleeding/2)
-            if bleed > 0 and (GetEntityHealth(cache.ped)-100) > bleed then
+            if bleed > 0 and (GetEntityHealth(cache.ped)-100) > bleed and not deathState then
                 ApplyDamageToPed(cache.ped, bleed)
-                NDCore.notify({
-                    id = "playerBleeding",
-                    title = "You're bleeding!",
-                    icon = "droplet",
-                    iconColor = "#eb4034",
-                    duration = 4000,
-                    position = "bottom-right"
-                })
+                notifyInfo.title = "You're bleeding!"
+                NDCore.notify(notifyInfo)
             elseif bleed > 0 and not deathState then
+                bleedOutTimer = GetCloudTimeAsInt()
+                setDeathState("down")
+                notifyInfo.title = "You're need help!"
+                NDCore.notify(notifyInfo)
+            elseif bleed > 0 and deathState == "down" and bleedOutTimer and bleedOutTimer-GetCloudTimeAsInt() > 120 then
                 setDeathState("dead")
-                NDCore.notify({
-                    id = "playerBleeding",
-                    title = "You bled out!",
-                    icon = "droplet",
-                    iconColor = "#eb4034",
-                    duration = 3000,
-                    position = "bottom-right"
-                })
+                notifyInfo.title = "You bled out!"
+                NDCore.notify(notifyInfo)
             end
         end
     end
@@ -125,7 +150,8 @@ exports("resetBodyDamage", function()
     bleeding = 0
     deathState = nil
     downAnim = nil
-    TriggerServerEvent("ND_Ambulance:updateInfo", BodyBonesDamage)
+    local state = Player(cache.serverId).state
+    state:set("injuries", nil, true)
 end)
 
 exports("updateBodyDamage", function(bone, damageWeapon)
@@ -180,9 +206,15 @@ lib.onCache("ped", function()
     SetPlayerHealthRechargeMultiplier(cache.playerId, 0.0)
 end)
 
-RegisterNetEvent("ND_Ambulance:updateInfo", function(info)
+AddStateBagChangeHandler("injuries", nil, function(bagName, key, value, reserved, replicated)
+    local ply = GetPlayerFromStateBagName(bagName)
+    if ply == 0 or replicated then return end
+
+    local src = GetPlayerServerId(ply)
+    if src ~= cache.serverId or not value then return end
+
     for bone, limb in pairs(BodyBonesDamage) do
-        local updatedLimb = info[bone]
+        local updatedLimb = value[bone]
         if updatedLimb then
             limb.suffocating = updatedLimb.suffocating
             limb.fracture = updatedLimb.fracture
@@ -204,7 +236,7 @@ RegisterNetEvent("ND_Ambulance:syncDragBody", function(draggingPlayer, leave)
         TaskPlayAnim(cache.ped, "combat@drag_ped@", "injured_putdown_ped", 2.0, 2.0, 5700, 1, 0, false, false, false)
         Wait(5000)
         DetachEntity(draggingPed, true, true)
-        downAnim = setDeathState("down")
+        downAnim = setDeathState(deathState or "down")
         return
     end
 
@@ -221,12 +253,12 @@ end, false)
 
 exports.ox_target:addGlobalPlayer({
     {
-        name = "ND_Ambulance:dragBody",
+        name = "ND_Ambulance:checkInjuries",
         icon = "fa-solid fa-hand-holding-heart",
         label = "Check injuries",
         distance = 2.0,
         canInteract = function(entity, distance, coords, name)
-            return not bodyAttached and GetEntityHealth(entity) < 100
+            return not bodyAttached and GetEntityHealth(entity) <= 101
         end,
         onSelect = function(data)
             local target = GetPlayerServerId(NetworkGetPlayerIndexFromPed(data.entity))
