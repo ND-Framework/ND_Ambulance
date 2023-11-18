@@ -15,8 +15,9 @@ local function use(target)
             type = "error"
         }
     end
-    
-    local injuries = InjuredPlayers[target]
+
+    local state = Player(target).state
+    local injuries = state.injuries
     if not injuries then
         return false, {
             title = "Error",
@@ -34,7 +35,7 @@ local function use(target)
         }
     end
 
-    return true, {
+    return injuries, {
         title = "Success",
         description = ("Used gauze on wounds on %s."):format(limbName),
         type = "success"
@@ -44,19 +45,28 @@ end
 function UseNearbyItems.gauze(src)
     local target = GetNearestPlayer(src)
     local result, info = use(target)
-    TriggerClientEvent("ND_Ambulance:updateInfo", target, InjuredPlayers[target])
+    if result then
+        state:set("injuries", result, true)
+    end
     return result, info, target
 end
 
 exports("gauze", function(event, item, inventory, slot, data)
-    if event ~= "usingItem" then return end
-    
-    local result, info = use(inventory.id)
-    local player = NDCore.getPlayer(inventory.id)
-    player.notify(info)
-    
-    if result then
-        TriggerClientEvent("ND_Ambulance:updateInfo", inventory.id, InjuredPlayers[inventory.id])
+    if event == "usingItem" then
+        local result, info = use(inventory.id)
+        if not result then            
+            local player = NDCore.getPlayer(inventory.id)
+            player.notify(info)
+        end
+        return result
     end
-    return result
+    
+    if event == "usedItem" then        
+        local result, info = use(inventory.id)
+        if result then
+            state:set("injuries", result, true)
+        end
+        local player = NDCore.getPlayer(inventory.id)
+        player.notify(info)
+    end
 end)

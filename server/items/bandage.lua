@@ -1,6 +1,6 @@
 local function check(injuries)
     for bone, limb in pairs(injuries) do
-        if limb.usedGauze and limb.bleeding and limb.severity and limb.severity > 0 then
+        if limb and limb.usedGauze and limb.bleeding and limb.severity and limb.severity > 0 then
             if limb.bleeding > 0 and limb.bleeding < 1.0 then
                 if limb.severity then
                     limb.severity -= limb.bleeding
@@ -11,11 +11,6 @@ local function check(injuries)
                 limb.severity -= 1.0
             end
             limb.usedBandage = true
-            SetTimeout(500, function()
-                if limb.severity == 0 then
-                    injuries[bone] = nil
-                end
-            end)
             return limb.label
         end
     end
@@ -30,7 +25,9 @@ local function use(target)
         }
     end
     
-    local injuries = InjuredPlayers[target]
+    local state = Player(target).state
+    local injuries = state.injuries
+
     if not injuries then
         return false, {
             title = "Error",
@@ -48,7 +45,7 @@ local function use(target)
         }
     end
 
-    return true, {
+    return injuries, {
         title = "Success",
         description = ("Used bandage to hold together gauze on %s."):format(limbName),
         type = "success"
@@ -58,19 +55,28 @@ end
 function UseNearbyItems.bandage2(src)
     local target = GetNearestPlayer(src)
     local result, info = use(target)
-    TriggerClientEvent("ND_Ambulance:updateInfo", target, InjuredPlayers[target])
+    if result then
+        state:set("injuries", result, true)
+    end
     return result, info, target
 end
 
 exports("bandage2", function(event, item, inventory, slot, data)
-    if event ~= "usingItem" then return end
-    
-    local result, info = use(inventory.id)
-    local player = NDCore.getPlayer(inventory.id)
-    player.notify(info)
-
-    if result then
-        TriggerClientEvent("ND_Ambulance:updateInfo", inventory.id, InjuredPlayers[inventory.id])
+    if event == "usingItem" then
+        local result, info = use(inventory.id)
+        if not result then            
+            local player = NDCore.getPlayer(inventory.id)
+            player.notify(info)
+        end
+        return result
     end
-    return result
+    
+    if event == "usedItem" then        
+        local result, info = use(inventory.id)
+        if result then
+            state:set("injuries", result, true)
+        end
+        local player = NDCore.getPlayer(inventory.id)
+        player.notify(info)
+    end
 end)
