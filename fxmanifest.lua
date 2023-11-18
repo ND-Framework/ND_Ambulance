@@ -14,9 +14,6 @@ shared_scripts {
     "data.lua"
 }
 server_scripts {
-    "server/main.lua"
 }
 client_scripts {
-    "client/main.lua",
-    "client/items.lua"
 }
