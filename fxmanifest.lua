@@ -10,7 +10,6 @@ lua54 "yes"
 
 dependencies {
     "ox_lib",
-    "ox_inventory",
     "ox_target",
     "ND_Core"
 }
