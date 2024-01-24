@@ -40,6 +40,7 @@ function UseNearbyItems.tourniquet(src)
     local target = GetNearestPlayer(src)
     local result, info = use(target)
     if result then
+        local state = Player(target).state
         state:set("injuries", result, true)
     end
     return result, info, target
@@ -58,6 +59,7 @@ exports("tourniquet", function(event, item, inventory, slot, data)
     if event == "usedItem" then        
         local result, info = use(inventory.id)
         if result then
+            local state = Player(inventory.id).state
             state:set("injuries", result, true)
         end
         local player = NDCore.getPlayer(inventory.id)
