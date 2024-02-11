@@ -159,10 +159,6 @@ local function setPlayerKnockedOut()
     end)
 end
 
-RegisterCommand("knockout", function(source, args, rawCommand)
-    setPlayerKnockedOut()
-end, false)
-
 -- ND Core death system event.
 AddEventHandler("ND:playerEliminated", function(info)
     Wait(2000)
