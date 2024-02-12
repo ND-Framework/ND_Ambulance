@@ -1,6 +1,6 @@
 local respawn = {}
 
-respawn.timer = 5 -- time in seconds.
+respawn.timer = 300 -- time in seconds.
 respawn.keybind = "R" -- respawn keybind
 respawn.damage = 2 -- amount of damage that will be taken every few seconds when knocked down injured. (Must be a whole number)
 respawn.dropInventory = true -- drop player items when respawn

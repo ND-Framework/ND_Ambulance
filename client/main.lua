@@ -14,6 +14,23 @@ local knockedOut = false
 local bleeding = 0
 local bodyBonesDamage = lib.table.deepclone(data_bone_settings)
 
+local function revivePlayer()
+    local veh = GetVehiclePedIsIn(cache.ped)
+    local seat = cache.seat
+    local coords = GetEntityCoords(cache.ped)
+    NetworkResurrectLocalPlayer(coords.x, coords.y, coords.z, GetEntityHeading(cache.ped), true, true, false)
+
+    local ped = PlayerPedId()
+    if cache.ped ~= ped then
+        DeleteEntity(cache.ped)
+        ClearAreaOfPeds(coords.x, coords.y, coords.z, 0.2, false)
+    end
+
+    if veh and veh ~= 0 then
+        SetPedIntoVehicle(ped, veh, seat)
+    end
+end
+
 local function teleport(ped, coords, withVehicle)
     FreezeEntityPosition(ped, true)
     StartPlayerTeleport(cache.playerId, coords.x, coords.y, coords.z, coords.w, withVehicle, true, true)
@@ -38,6 +55,7 @@ local function getNearestRespawnPoint()
     return nearestCoords
 end
 
+-- injured walking style set depending on body part injury.
 local function hurtWalk()
     for _, info in pairs(bodyBonesDamage) do        
         if info.causeLimp and info.severity > 1.0 then
@@ -54,6 +72,27 @@ local function hurtWalk()
     end
 end
 
+-- get body damage based on body parts.
+local function getInjuredBoneData(bones)
+    local data = {}
+    for bone, info in pairs(bones) do
+        if info.severity > 0 then
+            if not data[bone] then
+                data[bone] = info
+            else
+                local limb = data[bone]
+                limb.suffocating = info.suffocating
+                limb.fracture = info.fracture
+                limb.burn = info.burn
+                limb.bleeding = info.bleeding
+                limb.severity = info.severity
+            end
+        end
+    end
+    return data
+end
+
+-- update the statebag for the body damage.
 local function updateBodyDamage()
     if not lastSync or (GetGameTimer()-lastSync) < 5000 then return end
     lastSync = GetGameTimer()
@@ -77,11 +116,15 @@ local function getRandomDeathAnim()
     return data_animations[math.random(1, #data_animations)]
 end
 
+-- handle player death based on death state.
 local function setDead(ped, dict, clip, newDeathState)
+    if deathState == newDeathState then return end
+
     local respawnTimer = nil
     local deadTime = data_respawn.timer
     local lastCheckTime = GetCloudTimeAsInt()
     deathState = newDeathState
+    FreezeEntityPosition(cache.ped, true)
 
     if newDeathState == "eliminated" then
         SetEntityHealth(ped, 100)
@@ -100,13 +143,14 @@ local function setDead(ped, dict, clip, newDeathState)
             local ped = cache.ped
 
             if not IsEntityPlayingAnim(ped, dict, clip, 3) then
-                TaskPlayAnim(ped, dict, clip, 2.0, 8.0, -1, 1, 0, false, false, false)
+                TaskPlayAnim(ped, dict, clip, 47.0, 47.0, -1, 1, 0, false, false, false)
             end
 
             if newDeathState == "eliminated" then
                 SetPedDiesWhenInjured(ped, false)
-                SetEntityInvincible(ped, true)
                 SetEntityCanBeDamaged(ped, false)
+                SetEntityInvincible(ped, true)
+                SetPlayerInvincible(cache.playerId, true)
 
                 local time = GetCloudTimeAsInt()
                 if deadTime > 0 and time-lastCheckTime > 0 then
@@ -139,32 +183,17 @@ local function setDead(ped, dict, clip, newDeathState)
             SetBlockingOfNonTemporaryEvents(ped, true)
             SetPedCanRagdollFromPlayerImpact(ped, false)
 
-            Wait(50)
+            Wait(0)
         end
         SendNUIMessage({ type = "ambulance_reset" })
     end)
 end
 
-local function getInjuredBoneData(bones)
-    local data = {}
-    for bone, info in pairs(bones) do
-        if info.severity > 0 then
-            if not data[bone] then
-                data[bone] = info
-            else
-                local limb = data[bone]
-                limb.suffocating = info.suffocating
-                limb.fracture = info.fracture
-                limb.burn = info.burn
-                limb.bleeding = info.bleeding
-                limb.severity = info.severity
-            end
-        end
-    end
-    return data
-end
-
+-- set stateags and determine animation that should be playing.
 local function setDeathState(newState)
+    if knockedOut or deathState == "eliminated" then return end
+
+    knockedOut = false
     local ped = PlayerPedId()
 
     if LocalPlayer.state.dead and deathState == "knocked" then
@@ -188,7 +217,7 @@ local function updatePreviousPlayerDeath(player)
     SetPlayerHealthRechargeMultiplier(cache.playerId, 0.0)
 
     if not player or not player.metadata.dead then return end
-    NDCore.revivePlayer(false, true)
+    revivePlayer()
     setDeathState("knocked")
 end
 
@@ -212,15 +241,14 @@ end
 -- ND Core death system event.
 AddEventHandler("ND:playerEliminated", function(info)
     Wait(2000)
-    NDCore.revivePlayer(false, true)
+    revivePlayer()
 
     -- set player as knocked out if injured with a non lethal weapon.
-    if not knockedOut and lib.table.contains(data_knockout, info.deathCause) then
+    if not knockedOut and not deathState and lib.table.contains(data_knockout, info.deathCause) then
         return setPlayerKnockedOut()
     end
     
     -- set player as knocked down dead if injured any other way.
-    knockedOut = false
     setDeathState("knocked")
 end)
 
@@ -229,6 +257,15 @@ AddEventHandler("onResourceStart", function(resourceName)
     Wait(1000)
     local player = NDCore.getPlayer()
     updatePreviousPlayerDeath(player)
+end)
+
+RegisterNetEvent("ND:revivePlayer", function()
+    if source == "" then return end
+    deathState = nil
+    bleeding = 0
+    bodyBonesDamage = lib.table.deepclone(data_bone_settings)
+    local state = Player(cache.serverId).state
+    state:set("injuries", nil, true)
 end)
 
 RegisterNetEvent("ND:characterLoaded", function(player)
@@ -306,13 +343,6 @@ end)
 
 exports("getBodyDamage", function()
     return bodyBonesDamage
-end)
-
-exports("resetBodyDamage", function()
-    bodyBonesDamage = lib.table.deepclone(data_bone_settings)
-    bleeding = 0
-    local state = Player(cache.serverId).state
-    state:set("injuries", nil, true)
 end)
 
 exports("updateBodyDamage", function(bone, damageWeapon)
