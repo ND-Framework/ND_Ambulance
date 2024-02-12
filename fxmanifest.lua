@@ -15,8 +15,11 @@ dependencies {
 }
 
 files {
-    "data/**"
+    "data/**",
+    "ui/**"
 }
+
+ui_page "ui/index.html"
 
 shared_scripts {
     "@ox_lib/init.lua",
@@ -25,4 +28,8 @@ shared_scripts {
 
 client_scripts {
     "client/**"
+}
+
+server_scripts {
+    "server/**"
 }

@@ -3,6 +3,7 @@ local data_weapons = require("data.weapons")
 local data_bone_settings = require("data.bone_settings")
 local data_bones = require("data.bones")
 local data_knockout = require("data.knockout")
+local data_respawn = require("data.respawn")
 
 local randomDeathAnim = nil
 local downAnim = nil
@@ -12,6 +13,30 @@ local bleedOutTimer = nil
 local knockedOut = false
 local bleeding = 0
 local bodyBonesDamage = lib.table.deepclone(data_bone_settings)
+
+local function teleport(ped, coords, withVehicle)
+    FreezeEntityPosition(ped, true)
+    StartPlayerTeleport(cache.playerId, coords.x, coords.y, coords.z, coords.w, withVehicle, true, true)
+    while IsPlayerTeleportActive() or not HasCollisionLoadedAroundEntity(ped) do Wait(10) end
+end
+
+local function getNearestRespawnPoint()
+    local locations = data_respawn.locations
+    local nearestDist = nil
+    local nearestCoords = nil
+    local pedCoords = GetEntityCoords(cache.ped)
+
+    for i=1, #locations do
+        local loc = locations[i]
+        local dist = #(loc.xyz-pedCoords)
+        if not nearestCoords or not nearestDist or dist < nearestDist then
+            nearestCoords = loc
+            nearestDist = dist
+        end
+    end
+
+    return nearestCoords
+end
 
 local function hurtWalk()
     for _, info in pairs(bodyBonesDamage) do        
@@ -40,7 +65,7 @@ local function getTotalDamageType(body, damageType)
     if not body then return 0 end
 
     local value = 0
-    for _, info in pairs(body) do        
+    for _, info in pairs(body) do
         if info[damageType] then
             value += info[damageType]
         end
@@ -53,12 +78,20 @@ local function getRandomDeathAnim()
 end
 
 local function setDead(ped, dict, clip, newDeathState)
+    local respawnTimer = nil
+    local deadTime = data_respawn.timer
     local lastCheckTime = GetCloudTimeAsInt()
     deathState = newDeathState
 
     if newDeathState == "eliminated" then
         SetEntityHealth(ped, 100)
+        SendNUIMessage({ type = "eliminated" })
+        respawnTimer = data_respawn.timer
+
+        local state = Player(cache.serverId).state
+        state:set("timeSinceDeath", lastCheckTime, true)
     else
+        SendNUIMessage({ type = "knocked_down" })
         SetEntityHealth(ped, GetEntityMaxHealth(ped))
     end
 
@@ -70,15 +103,30 @@ local function setDead(ped, dict, clip, newDeathState)
                 TaskPlayAnim(ped, dict, clip, 2.0, 8.0, -1, 1, 0, false, false, false)
             end
 
-            if deathState == "eliminated" then
+            if newDeathState == "eliminated" then
                 SetPedDiesWhenInjured(ped, false)
                 SetEntityInvincible(ped, true)
                 SetEntityCanBeDamaged(ped, false)
+
+                local time = GetCloudTimeAsInt()
+                if deadTime > 0 and time-lastCheckTime > 0 then
+                    lastCheckTime = time
+                    deadTime -= 1
+                    SendNUIMessage({
+                        type = "update_respawn_timer",
+                        time = deadTime
+                    })
+                elseif deadTime == 0 then
+                    SendNUIMessage({
+                        type = "update_respawn_available",
+                        keybind = data_respawn.keybind
+                    })
+                end
             else
                 local time = GetCloudTimeAsInt()
                 if time-lastCheckTime > 4 then
                     lastCheckTime = time
-                    ApplyDamageToPed(cache.ped, 2)
+                    ApplyDamageToPed(cache.ped, data_respawn.damage)
                     DoScreenFadeOut(500)
                     SetTimeout(200, function()
                         DoScreenFadeIn(500)
@@ -93,6 +141,7 @@ local function setDead(ped, dict, clip, newDeathState)
 
             Wait(50)
         end
+        SendNUIMessage({ type = "ambulance_reset" })
     end)
 end
 
@@ -144,17 +193,18 @@ local function updatePreviousPlayerDeath(player)
 end
 
 local function setPlayerKnockedOut()
-    if knockedOut then return end
-
+    SendNUIMessage({ type = "knocked_out" })
     knockedOut = true
     local timeKnocked = GetCloudTimeAsInt()
 
     CreateThread(function()
-        while GetCloudTimeAsInt()-timeKnocked < 30 do
+        while knockedOut and GetCloudTimeAsInt()-timeKnocked < 30 do
             SetPedToRagdoll(cache.ped, 5000, 5000, 0, true, true, false)
             Wait(500)
         end
 
+        if not knockedOut then return end
+        SendNUIMessage({ type = "ambulance_reset" })
         knockedOut = false
     end)
 end
@@ -165,11 +215,12 @@ AddEventHandler("ND:playerEliminated", function(info)
     NDCore.revivePlayer(false, true)
 
     -- set player as knocked out if injured with a non lethal weapon.
-    if lib.table.contains(data_knockout, info.deathCause) then
+    if not knockedOut and lib.table.contains(data_knockout, info.deathCause) then
         return setPlayerKnockedOut()
     end
     
     -- set player as knocked down dead if injured any other way.
+    knockedOut = false
     setDeathState("knocked")
 end)
 
@@ -294,3 +345,27 @@ exports("updateBodyDamage", function(bone, damageWeapon)
     hurtWalk()
     updateBodyDamage()
 end)
+
+lib.addKeybind({
+    name = "respawn",
+    description = "Respawn when dead",
+    defaultKey = data_respawn.keybind,
+    onPressed = function(self)
+        if not LocalPlayer.state.dead then return end
+
+        local state = Player(cache.serverId).state
+        if not state or GetCloudTimeAsInt()-state.timeSinceDeath < data_respawn.timer then return end
+
+        deathState = nil
+        DoScreenFadeOut(500)
+        Wait(500)
+
+        TriggerServerEvent("ND_Ambulance:respawnPlayer")
+        Wait(200)
+        
+        local coords = getNearestRespawnPoint()
+        teleport(cache.ped, coords, false)
+
+        DoScreenFadeIn(500)
+    end
+})
