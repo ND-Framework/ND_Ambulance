@@ -15,14 +15,16 @@ local bleeding = 0
 local bodyBonesDamage = lib.table.deepclone(data_bone_settings)
 
 local function revivePlayer()
-    local veh = GetVehiclePedIsIn(cache.ped)
+    local oldPed = cache.ped
     local seat = cache.seat
-    local coords = GetEntityCoords(cache.ped)
-    NetworkResurrectLocalPlayer(coords.x, coords.y, coords.z, GetEntityHeading(cache.ped), true, true, false)
+    local veh = cache.vehicle
+    local coords = GetEntityCoords(oldPed)
+    NetworkResurrectLocalPlayer(coords.x, coords.y, coords.z, GetEntityHeading(oldPed), true, true, false)
 
     local ped = PlayerPedId()
-    if cache.ped ~= ped then
-        DeleteEntity(cache.ped)
+    if oldPed ~= ped then
+        SetEntityLocallyInvisible(oldPed)
+        DeleteEntity(oldPed)
         ClearAreaOfPeds(coords.x, coords.y, coords.z, 0.2, false)
     end
 
@@ -124,7 +126,7 @@ local function setDead(ped, dict, clip, newDeathState)
     local deadTime = data_respawn.timer
     local lastCheckTime = GetCloudTimeAsInt()
     deathState = newDeathState
-    FreezeEntityPosition(cache.ped, true)
+    FreezeEntityPosition(ped, true)
 
     if newDeathState == "eliminated" then
         SetEntityHealth(ped, 100)
@@ -170,7 +172,7 @@ local function setDead(ped, dict, clip, newDeathState)
                 local time = GetCloudTimeAsInt()
                 if time-lastCheckTime > 4 then
                     lastCheckTime = time
-                    ApplyDamageToPed(cache.ped, data_respawn.damage)
+                    ApplyDamageToPed(ped, data_respawn.damage)
                     DoScreenFadeOut(500)
                     SetTimeout(200, function()
                         DoScreenFadeIn(500)
