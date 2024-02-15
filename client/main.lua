@@ -3,8 +3,9 @@ local data_weapons = require("data.weapons")
 local data_bone_settings = require("data.bone_settings")
 local data_bones = require("data.bones")
 local data_knockout = require("data.knockout")
-local data_respawn = require("data.respawn")
+local data_death = require("data.death")
 
+local respawnKeybindLetter = ""
 local randomDeathAnim = nil
 local downAnim = nil
 local deathState = nil
@@ -40,7 +41,7 @@ local function teleport(ped, coords, withVehicle)
 end
 
 local function getNearestRespawnPoint()
-    local locations = data_respawn.locations
+    local locations = data_death.locations
     local nearestDist = nil
     local nearestCoords = nil
     local pedCoords = GetEntityCoords(cache.ped)
@@ -123,7 +124,7 @@ local function setDead(ped, dict, clip, newDeathState)
     if deathState == newDeathState then return end
 
     local respawnTimer = nil
-    local deadTime = data_respawn.timer
+    local deadTime = data_death.timer
     local lastCheckTime = GetCloudTimeAsInt()
     deathState = newDeathState
     FreezeEntityPosition(ped, true)
@@ -131,7 +132,7 @@ local function setDead(ped, dict, clip, newDeathState)
     if newDeathState == "eliminated" then
         SetEntityHealth(ped, 100)
         SendNUIMessage({ type = "eliminated" })
-        respawnTimer = data_respawn.timer
+        respawnTimer = data_death.timer
 
         local state = Player(cache.serverId).state
         state:set("timeSinceDeath", lastCheckTime, true)
@@ -165,14 +166,14 @@ local function setDead(ped, dict, clip, newDeathState)
                 elseif deadTime == 0 then
                     SendNUIMessage({
                         type = "update_respawn_available",
-                        keybind = data_respawn.keybind
+                        keybind = respawnKeybindLetter
                     })
                 end
             else
                 local time = GetCloudTimeAsInt()
-                if time-lastCheckTime > 4 then
+                if time-lastCheckTime > data_death.damageInterval then
                     lastCheckTime = time
-                    ApplyDamageToPed(ped, data_respawn.damage)
+                    ApplyDamageToPed(ped, data_death.damage)
                     DoScreenFadeOut(500)
                     SetTimeout(200, function()
                         DoScreenFadeIn(500)
@@ -187,7 +188,6 @@ local function setDead(ped, dict, clip, newDeathState)
 
             Wait(0)
         end
-        SendNUIMessage({ type = "ambulance_reset" })
     end)
 end
 
@@ -199,7 +199,6 @@ local function setDeathState(newState)
     local ped = PlayerPedId()
 
     if LocalPlayer.state.dead and deathState == "knocked" then
-        LocalPlayer.state.dead = false
         newState = "eliminated"
     end
 
@@ -224,6 +223,8 @@ local function updatePreviousPlayerDeath(player)
 end
 
 local function setPlayerKnockedOut()
+    local state = Player(cache.serverId).state
+    state:set("knockedout", true, true)
     SendNUIMessage({ type = "knocked_out" })
     knockedOut = true
     local timeKnocked = GetCloudTimeAsInt()
@@ -234,6 +235,7 @@ local function setPlayerKnockedOut()
             Wait(500)
         end
 
+        state:set("knockedout", false, true)
         if not knockedOut then return end
         SendNUIMessage({ type = "ambulance_reset" })
         knockedOut = false
@@ -266,8 +268,11 @@ RegisterNetEvent("ND:revivePlayer", function()
     deathState = nil
     bleeding = 0
     bodyBonesDamage = lib.table.deepclone(data_bone_settings)
+    SendNUIMessage({ type = "ambulance_reset" })
     local state = Player(cache.serverId).state
-    state:set("injuries", nil, true)
+    state:set("isDead", false, true)
+    state:set("injuries", false, true)
+    LocalPlayer.state.dead = false
 end)
 
 RegisterNetEvent("ND:characterLoaded", function(player)
@@ -378,15 +383,15 @@ exports("updateBodyDamage", function(bone, damageWeapon)
     updateBodyDamage()
 end)
 
-lib.addKeybind({
+local respawnKeybind = lib.addKeybind({
     name = "respawn",
     description = "Respawn when dead",
-    defaultKey = data_respawn.keybind,
+    defaultKey = data_death.keybind,
     onPressed = function(self)
         if not LocalPlayer.state.dead then return end
 
         local state = Player(cache.serverId).state
-        if not state or GetCloudTimeAsInt()-state.timeSinceDeath < data_respawn.timer then return end
+        if not state or GetCloudTimeAsInt()-state.timeSinceDeath < data_death.timer then return end
 
         deathState = nil
         DoScreenFadeOut(500)
@@ -401,3 +406,5 @@ lib.addKeybind({
         DoScreenFadeIn(500)
     end
 })
+
+respawnKeybindLetter = GetControlInstructionalButton(0, respawnKeybind.hash, 1):sub(3)
