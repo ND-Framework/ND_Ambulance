@@ -127,7 +127,6 @@ local function setDead(ped, dict, clip, newDeathState)
     local deadTime = data_death.timer
     local lastCheckTime = GetCloudTimeAsInt()
     deathState = newDeathState
-    FreezeEntityPosition(ped, true)
 
     if newDeathState == "eliminated" then
         SetEntityHealth(ped, 100)
@@ -144,8 +143,11 @@ local function setDead(ped, dict, clip, newDeathState)
     CreateThread(function()
         while LocalPlayer.state.dead and deathState == newDeathState do
             local ped = cache.ped
+            local onStretcher = LocalPlayer.state.onStretcher
 
-            if not IsEntityPlayingAnim(ped, dict, clip, 3) then
+            if onStretcher and not IsEntityPlayingAnim(ped, "anim@gangops@morgue@table@", "body_search", 3) then
+                TaskPlayAnim(ped, "anim@gangops@morgue@table@", "body_search", 47.0, 47.0, -1, 1, 0, false, false, false)
+            elseif not onStretcher and not IsEntityPlayingAnim(ped, dict, clip, 3) then
                 TaskPlayAnim(ped, dict, clip, 47.0, 47.0, -1, 1, 0, false, false, false)
             end
 
@@ -273,6 +275,7 @@ RegisterNetEvent("ND:revivePlayer", function()
     state:set("isDead", false, true)
     state:set("injuries", false, true)
     LocalPlayer.state.dead = false
+    LocalPlayer.state.onStretcher = false
 end)
 
 RegisterNetEvent("ND:characterLoaded", function(player)
