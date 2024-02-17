@@ -52,7 +52,7 @@ local function revivePlayer()
 end
 
 local function getNearestRespawnPoint()
-    local locations = data_death.locations
+    local locations = data_death.mourgeRespawn
     local nearestDist = nil
     local nearestCoords = nil
     local pedCoords = GetEntityCoords(cache.ped)
