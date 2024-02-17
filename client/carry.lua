@@ -103,7 +103,7 @@ end, false)
 
 exports.ox_target:addGlobalPlayer({
     {
-        name = "ND_Ambulance:checkInjuries",
+        name = "ND_Ambulance:carryNearby",
         icon = "fa-solid fa-notes-medical",
         label = "Check injuries",
         distance = 4.0,
