@@ -104,7 +104,7 @@ end, false)
 exports.ox_target:addGlobalPlayer({
     {
         name = "ND_Ambulance:carryNearby",
-        icon = "fa-solid fa-notes-medical",
+        icon = "fa-solid fa-hand-holding",
         label = "Carry",
         distance = 4.0,
         canInteract = function(entity, distance, coords, name, bone)
