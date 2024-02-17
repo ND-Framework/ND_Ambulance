@@ -10,18 +10,27 @@ local function isDead(state, ped)
 end
 
 local function startCarry(dict, anim, flag, carryingState, carriedState, carryingPed, carriedPed)
+    BlockActions(true)
+    CreateThread(function()
+        while carry do
+            if IsControlJustPressed(0, 73) then
+                carry = false
+            end
+            Wait(0)
+        end
+    end)
     CreateThread(function()
         local ped = cache.ped
         local playerState = Player(cache.serverId).state
         lib.requestAnimDict(dict)
 
-        while carryingState.ambulanceCarry and carriedState.ambulanceCarry and DoesEntityExist(carryingPed) and DoesEntityExist(carriedPed) and not isDead(carryingState, carryingPed) do
             if not IsEntityPlayingAnim(ped, dict, anim, 3) then
                 TaskPlayAnim(ped, dict, anim, 8.0, -8.0, -1, flag, 0, false, false, false)
             end
             Wait(500)
         end
 
+        BlockActions(false)
         if playerState.ambulanceCarry then
             cancelCarry(cache.ped, playerState)
         end

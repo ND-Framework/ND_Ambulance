@@ -15,6 +15,23 @@ local knockedOut = false
 local bleeding = 0
 local bodyBonesDamage = lib.table.deepclone(data_bone_settings)
 
+function BlockActions(status)
+    LocalPlayer.state.blockHandsUp = status
+    LocalPlayer.state.invBusy = status
+    
+    exports.ox_target:disableTargeting(status)
+
+    if GetResourceState("npwd") == "started" then
+        exports.npwd:setPhoneDisabled(status)
+    end
+end
+
+function Teleport(ped, coords, withVehicle)
+    FreezeEntityPosition(ped, true)
+    StartPlayerTeleport(cache.playerId, coords.x, coords.y, coords.z, coords.w, withVehicle, true, true)
+    while IsPlayerTeleportActive() or not HasCollisionLoadedAroundEntity(ped) do Wait(10) end
+end
+
 local function revivePlayer()
     local oldPed = cache.ped
     local seat = cache.seat
@@ -401,6 +418,7 @@ local respawnKeybind = lib.addKeybind({
         Wait(500)
 
         TriggerServerEvent("ND_Ambulance:respawnPlayer")
+        BlockActions(false)
         Wait(200)
         
         local coords = getNearestRespawnPoint()

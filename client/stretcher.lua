@@ -3,7 +3,7 @@ local ambulanceModels = require("data.vehicles")
 local ox_target = exports.ox_target
 
 local function stopMovingStretcher(playerState, entity)
-    LocalPlayer.state.blockHandsUp = false
+    BlockActions(false)
     playerState:set("movingStretcher", nil, true)
     lib.disableControls:Remove(73, 22, 21, 23, 24, 25, 257, 36)
 
@@ -15,7 +15,7 @@ local function stopMovingStretcher(playerState, entity)
 end
 
 local function startMoveStretcher(ped, entity, playerState)
-    LocalPlayer.state.blockHandsUp = true
+    BlockActions(true)
     lib.requestAnimDict("anim@move_m@prisoner_cuffed")
     lib.disableControls:Add(73, 22, 21, 23, 24, 25, 257, 36)
 
@@ -298,6 +298,7 @@ AddStateBagChangeHandler("ambulanceStretcherPlayer", nil, function(bagName, key,
     local oldValue = Entity(entity).state.ambulanceStretcherPlayer
     if not value and oldValue == cache.serverId then
         LocalPlayer.state.onStretcher = false
+        BlockActions(false)
         DetachEntity(cache.ped)
         Wait(100)
         local offset = GetOffsetFromEntityInWorldCoords(entity, 0.0, -1.3, 0.0)
@@ -305,6 +306,7 @@ AddStateBagChangeHandler("ambulanceStretcherPlayer", nil, function(bagName, key,
     end
 
     if cache.serverId ~= value then return end
+    BlockActions(true)
     LocalPlayer.state.onStretcher = true
 
     local height = isModelRaised(entity) and 2.11 or 1.49
