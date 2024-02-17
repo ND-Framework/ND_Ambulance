@@ -11,6 +11,7 @@ end
 
 local function startCarry(dict, anim, flag, carryingState, carriedState, carryingPed, carriedPed)
     BlockActions(true)
+    local carry = true
     CreateThread(function()
         while carry do
             if IsControlJustPressed(0, 73) then
@@ -24,6 +25,7 @@ local function startCarry(dict, anim, flag, carryingState, carriedState, carryin
         local playerState = Player(cache.serverId).state
         lib.requestAnimDict(dict)
 
+        while carry and carryingState.ambulanceCarry and carriedState.ambulanceCarry and DoesEntityExist(carryingPed) and DoesEntityExist(carriedPed) and not isDead(carryingState, carryingPed) do
             if not IsEntityPlayingAnim(ped, dict, anim, 3) then
                 TaskPlayAnim(ped, dict, anim, 8.0, -8.0, -1, flag, 0, false, false, false)
             end
@@ -31,6 +33,7 @@ local function startCarry(dict, anim, flag, carryingState, carriedState, carryin
         end
 
         BlockActions(false)
+        carry = false
         if playerState.ambulanceCarry then
             cancelCarry(cache.ped, playerState)
         end
@@ -57,6 +60,7 @@ local function carryNearbyPlayer()
     if isDead(playerState, cache.ped) or targetState.ambulanceCarry or not (targetState.handsUp or targetState.isCuffed or isDead(targetState, targetPed)) then return end
 
     playerState:set("ambulanceCarry", targetSrc, true)
+    Wait(500)
     startCarry("missfinale_c2mcs_1", "fin_c2_mcs_1_camman", 49, playerState, targetState, cache.ped, targetPed)
 end
 
