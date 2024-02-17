@@ -51,12 +51,6 @@ local function revivePlayer()
     end
 end
 
-local function teleport(ped, coords, withVehicle)
-    FreezeEntityPosition(ped, true)
-    StartPlayerTeleport(cache.playerId, coords.x, coords.y, coords.z, coords.w, withVehicle, true, true)
-    while IsPlayerTeleportActive() or not HasCollisionLoadedAroundEntity(ped) do Wait(10) end
-end
-
 local function getNearestRespawnPoint()
     local locations = data_death.locations
     local nearestDist = nil
@@ -152,6 +146,15 @@ local function setDead(ped, dict, clip, newDeathState)
 
         local state = Player(cache.serverId).state
         state:set("timeSinceDeath", lastCheckTime, true)
+
+        SetTimeout(2000, function()
+            if LocalPlayer.state.onStretcher then
+                local stretcher = GetNearestStretcher(GetEntityCoords(ped))
+                if DoesEntityExist(stretcher) then
+                    AttachPlayerToStretcher(stretcher)
+                end
+            end
+        end)
     else
         SendNUIMessage({ type = "knocked_down" })
         SetEntityHealth(ped, GetEntityMaxHealth(ped))
@@ -422,7 +425,7 @@ local respawnKeybind = lib.addKeybind({
         Wait(200)
         
         local coords = getNearestRespawnPoint()
-        teleport(cache.ped, coords, false)
+        Teleport(cache.ped, coords, false)
 
         DoScreenFadeIn(500)
     end

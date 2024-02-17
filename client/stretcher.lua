@@ -2,6 +2,45 @@ local stretcherModels = require("data.stretchers")
 local ambulanceModels = require("data.vehicles")
 local ox_target = exports.ox_target
 
+local function isObjectStretcher(hash)
+    for i=1, #stretcherModels do
+        local stretcher = stretcherModels[i]
+        if GetHashKey(stretcher) == hash or GetHashKey("lower"..stretcher) == hash then
+            return true
+        end
+    end
+end
+
+function GetNearestStretcher(coords)
+    local objects = lib.getNearbyObjects(coords, 4.0)
+    for i=1, #objects do
+        local obj = objects[i]
+        if isObjectStretcher(GetEntityModel(obj.object)) then
+            return obj.object
+        end
+    end
+end
+
+local function isModelRaised(entity)
+    local model = GetEntityModel(entity)
+    for i=1, #stretcherModels do
+        if GetHashKey(stretcherModels[i]) == model then
+            return true
+        end
+    end
+end
+
+function AttachPlayerToStretcher(entity)
+    local height = isModelRaised(entity) and 2.11 or 1.49
+    AttachEntityToEntity(
+        cache.ped, entity, nil,
+        0.2, 0.0, height,
+        0.0, 0.0, 88.0,
+        true, true, false,
+        true, 1, true
+    )
+end
+
 local function stopMovingStretcher(playerState, entity)
     BlockActions(false)
     playerState:set("movingStretcher", nil, true)
@@ -62,15 +101,6 @@ local function getTargetStretcherModels()
         table.insert(models, "lowered"..model)
     end
     return models
-end
-
-local function isModelRaised(entity)
-    local model = GetEntityModel(entity)
-    for i=1, #stretcherModels do
-        if GetHashKey(stretcherModels[i]) == model then
-            return true
-        end
-    end
 end
 
 -- get closest stretcher to coord.
@@ -236,7 +266,7 @@ end
 
 AddStateBagChangeHandler("hasStretcher", nil, function(bagName, key, value, reserved, replicated)
     if not value then return end
-
+    
     local veh = GetEntityFromStateBagName(bagName)
     local stretcher = getEntityFromNetId(value)
     if not DoesEntityExist(veh) and not DoesEntityExist(stretcher) or NetworkGetEntityOwner(veh) ~= cache.playerId then return end
@@ -261,9 +291,11 @@ end)
 AddStateBagChangeHandler("movingStretcher", nil, function(bagName, key, value, reserved, replicated)
     local ply = GetPlayerFromStateBagName(bagName)
     if ply == 0 then return end
-
+    
     if not value then
         local playerState = Player(GetPlayerServerId(ply)).state
+        if not playerState.movingStretcher then return end
+
         local entity = getEntityFromNetId(playerState.movingStretcher)
         if not DoesEntityExist(entity) then return end
 
@@ -309,14 +341,7 @@ AddStateBagChangeHandler("ambulanceStretcherPlayer", nil, function(bagName, key,
     BlockActions(true)
     LocalPlayer.state.onStretcher = true
 
-    local height = isModelRaised(entity) and 2.11 or 1.49
-    AttachEntityToEntity(
-        cache.ped, entity, nil,
-        0.2, 0.0, height,
-        0.0, 0.0, 88.0,
-        true, true, false,
-        true, 1, true
-    )
+    AttachPlayerToStretcher(entity)
 end)
 
 AddEventHandler("onResourceStop", function(resourceName)
