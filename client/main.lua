@@ -32,6 +32,18 @@ function Teleport(ped, coords, withVehicle)
     while IsPlayerTeleportActive() or not HasCollisionLoadedAroundEntity(ped) do Wait(10) end
 end
 
+function GetTotalDamageType(body, damageType)
+    if not body then return 0 end
+
+    local value = 0
+    for _, info in pairs(body) do
+        if info[damageType] then
+            value += info[damageType]
+        end
+    end
+    return value
+end
+
 local function revivePlayer()
     local oldPed = cache.ped
     local seat = cache.seat
@@ -90,40 +102,28 @@ end
 local function getInjuredBoneData(bones)
     local data = {}
     for bone, info in pairs(bones) do
-        if info.severity > 0 then
-            if not data[bone] then
-                data[bone] = info
-            else
-                local limb = data[bone]
-                limb.suffocating = info.suffocating
-                limb.fracture = info.fracture
-                limb.burn = info.burn
-                limb.bleeding = info.bleeding
-                limb.severity = info.severity
-            end
+        if info.severity <= 0 then goto skip end
+
+        if not data[bone] then
+            data[bone] = info
+        else
+            local limb = data[bone]
+            limb.suffocating = info.suffocating
+            limb.fracture = info.fracture
+            limb.burn = info.burn
+            limb.bleeding = info.bleeding
+            limb.severity = info.severity
         end
+        
+        ::skip::
     end
     return data
 end
 
 -- update the statebag for the body damage.
 local function updateBodyDamage()
-    if not lastSync or (GetGameTimer()-lastSync) < 5000 then return end
-    lastSync = GetGameTimer()
     local state = Player(cache.serverId).state
     state:set("injuries", getInjuredBoneData(bodyBonesDamage), true)
-end
-
-local function getTotalDamageType(body, damageType)
-    if not body then return 0 end
-
-    local value = 0
-    for _, info in pairs(body) do
-        if info[damageType] then
-            value += info[damageType]
-        end
-    end
-    return value
 end
 
 local function getRandomDeathAnim()
@@ -296,6 +296,11 @@ RegisterNetEvent("ND:revivePlayer", function()
     state:set("injuries", false, true)
     LocalPlayer.state.dead = false
     LocalPlayer.state.onStretcher = false
+    
+    if GetPedMovementClipset(cache.ped) == `move_m@injured` then
+        SetPedMoveRateOverride(cache.ped, 1.0)
+        ResetPedMovementClipset(cache.ped, 0)
+    end
 end)
 
 RegisterNetEvent("ND:characterLoaded", function(player)
@@ -305,27 +310,6 @@ end)
 
 lib.onCache("ped", function()
     SetPlayerHealthRechargeMultiplier(cache.playerId, 0.0)
-end)
-
-AddStateBagChangeHandler("injuries", nil, function(bagName, key, value, reserved, replicated)
-    local ply = GetPlayerFromStateBagName(bagName)
-    if ply == 0 or replicated then return end
-
-    local src = GetPlayerServerId(ply)
-    if src ~= cache.serverId or not value then return end
-
-    for bone, limb in pairs(bodyBonesDamage) do
-        local updatedLimb = value[bone]
-        if updatedLimb then
-            limb.suffocating = updatedLimb.suffocating
-            limb.fracture = updatedLimb.fracture
-            limb.burn = updatedLimb.burn
-            limb.bleeding = updatedLimb.bleeding
-            limb.severity = updatedLimb.severity
-        end
-    end
-    bleeding = getTotalDamageType(bodyBonesDamage, "bleeding")
-    hurtWalk()
 end)
 
 CreateThread(function()
@@ -363,10 +347,12 @@ CreateThread(function()
 end)
 
 exports("getLastDamagingWeapon", function(ped)
-    for weapon, info in pairs(data_weapons) do
-        if HasPedBeenDamagedByWeapon(ped, weapon, 0) then
-            ClearEntityLastDamageEntity(ped)
-            return info
+    for i=0, 2 do
+        for weapon, info in pairs(data_weapons) do
+            if HasPedBeenDamagedByWeapon(ped, weapon, i) then
+                ClearEntityLastDamageEntity(ped)
+                return info
+            end
         end
     end
 end)
@@ -401,7 +387,7 @@ exports("updateBodyDamage", function(bone, damageWeapon)
         boneInfo.injury[#boneInfo.injury+1] = damageWeapon.injury
     end
 
-    bleeding = getTotalDamageType(bodyBonesDamage, "bleeding")
+    bleeding = GetTotalDamageType(bodyBonesDamage, "bleeding")
     hurtWalk()
     updateBodyDamage()
 end)
