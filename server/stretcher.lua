@@ -66,7 +66,7 @@ RegisterNetEvent("ND_Ambulance:placePedOnStretcher", function(targetPlayer, stre
     local targetPed = GetPlayerPed(targetPlayer)
     local targetCoords = GetEntityCoords(targetPed)
 
-    if #(targetCoords-stretcherCoords) > 3 then return end
+    if #(targetCoords-stretcherCoords) > 10 then return end
     local state = Entity(entity).state
     state:set("ambulanceStretcherPlayer", targetPlayer, true)
 end)
