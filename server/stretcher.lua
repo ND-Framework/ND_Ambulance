@@ -16,13 +16,6 @@ AddEventHandler("onResourceStop", function(resourceName)
     end
 end)
 
-RegisterCommand("teststret", function(source, args, rawCommand)
-    local hash = `fernocot`
-    local coords = vec3(1364.11, 3161.52, 39.41)
-    local prop = CreateObjectNoOffset(hash, coords.x, coords.y, coords.z, true, true, false)
-end, false)
-
-
 local function isModelStretcher(model, regular)
     for i=1, #stretcherModels do
         local hash = GetHashKey(regular and stretcherModels[i] or "lowered"..stretcherModels[i])
