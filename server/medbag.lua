@@ -1,12 +1,7 @@
 local bagEntities = {}
 local bagInventories = {}
 local medBagItemsWeight = 0
-local medBagItems = {
-    {"tourniquet", 4},
-    {"gauze", 15},
-    {"bandage2", 15},
-    {"medkit", 2}
-}
+local medBagItems = require("data.medbag")
 
 for item, data in pairs(exports.ox_inventory:Items()) do
     for i=1, #medBagItems do
@@ -62,7 +57,7 @@ lib.callback.register("ND_Ambulance:bagStatus", function(source, enable)
             stashWeight = getWeightFromInventory(bag.metadata.stashId)
         end
 
-        bag.metadata.weight = stashWeight or medBagItemsWeight
+        bag.metadata.weight = (stashWeight or medBagItemsWeight) + (bag.weight or 0)
         exports.ox_inventory:SetMetadata(source, bag.slot, bag.metadata)
     end)
 
