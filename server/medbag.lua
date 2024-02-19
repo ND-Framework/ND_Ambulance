@@ -1,9 +1,13 @@
 local bagEntities = {}
 local bagInventories = {}
 local medBagItemsWeight = 0
+local defaultMedbagWeight = 0
 local medBagItems = require("data.medbag")
 
 for item, data in pairs(exports.ox_inventory:Items()) do
+    if item == medbag then
+        defaultMedbagWeight = data.weight
+    end
     for i=1, #medBagItems do
         local medBagItem = medBagItems[i]
         if medBagItem[1] == item then
@@ -44,22 +48,19 @@ lib.callback.register("ND_Ambulance:bagStatus", function(source, enable)
         netId = netId
     }
 
-    -- update bag weight.
-    SetTimeout(500, function ()
-        local bag = exports.ox_inventory:Search(source, 1, "medbag")
-        for _, v in pairs(bag) do
-            bag = v
-            break
-        end
+    local bag = exports.ox_inventory:Search(source, 1, "medbag")
+    for _, v in pairs(bag) do
+        bag = v
+        break
+    end
 
-        local stashWeight
-        if bag.metadata.stashId then
-            stashWeight = getWeightFromInventory(bag.metadata.stashId)
-        end
+    local stashWeight
+    if bag.metadata.stashId then
+        stashWeight = getWeightFromInventory(bag.metadata.stashId)
+    end
 
-        bag.metadata.weight = (stashWeight or medBagItemsWeight) + (bag.weight or 0)
-        exports.ox_inventory:SetMetadata(source, bag.slot, bag.metadata)
-    end)
+    bag.metadata.weight = (stashWeight or medBagItemsWeight) + (defaultMedbagWeight or 0)
+    exports.ox_inventory:SetMetadata(source, bag.slot, bag.metadata)
 
     return netId
 end)
@@ -132,3 +133,12 @@ RegisterNetEvent("onResourceStop", function(name)
         end
     end
 end)
+
+exports.ox_inventory:registerHook("swapItems", function(payload)
+    if payload.toType ~= "player" or payload.fromInventory == payload.toInventory then return end
+    return exports.ox_inventory:GetItemCount(payload.toInventory, "medbag") == 0
+end, {
+    itemFilter = {
+        medbag = true
+    }
+})
