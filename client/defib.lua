@@ -65,3 +65,126 @@ end)
 exports("hasDefib", enableDefib)
 
 exports.ox_target:addModel(`lifepak15`, options)
+
+exports.ox_target:addGlobalPlayer({
+    {
+        name = "ND_Ambulance:checkVital",
+        icon = "fa-solid fa-heart-pulse",
+        label = "Vital Signs",
+        distance = 1.5,
+        canInteract = function(entity, distance, coords, name, bone)
+            local prop = GetClosestObjectOfType(coords.x, coords.y, coords.z, 5.0, `lifepak15`, false, false, false)
+            if not prop or not DoesEntityExist(prop) then return end
+
+            local player = NetworkGetPlayerIndexFromPed(entity)
+            local serverId = GetPlayerServerId(player)
+            local state = Player(serverId).state
+            return state.isDead or state.knockedout
+        end,
+        onSelect = function(data)
+            local player = NetworkGetPlayerIndexFromPed(data.entity)
+            local serverId = GetPlayerServerId(player)
+            local state = Player(serverId).state
+            local deathState = state.isDead
+            if state.knockedout then
+                NDCore.notify({
+                    title = "Vital signs",
+                    description = "Patient unconscious. Vital signs stable. Appears to have been knocked out.",
+                    type = "inform",
+                    icon = "heart-pulse",
+                    duration = 8000
+                })
+            elseif deathState == "knocked" then
+                NDCore.notify({
+                    title = "Vital signs",
+                    description = "Patient unconscious. Vital signs stable. Appears to have sustained significant injuries.",
+                    type = "inform",
+                    icon = "heart-pulse",
+                    duration = 8000
+                })
+            elseif deathState == "eliminated" then
+                local timeSinceDeath = state.timeSinceDeath
+                if GetCloudTimeAsInt()-timeSinceDeath < 30 then
+                    NDCore.notify({
+                        title = "Vital signs",
+                        description = "No pulse detected. Initiating life-saving measures & transport to medical facility recommended.",
+                        type = "inform",
+                        icon = "heart-pulse",
+                        duration = 8000
+                    })
+                else
+                    NDCore.notify({
+                        title = "Vital signs",
+                        description = "No pulse detected. Patient deceased. Life-saving measures ineffective.",
+                        type = "inform",
+                        icon = "heart-pulse",
+                        duration = 8000
+                    })
+                end
+            end
+        end
+    },
+    {
+        name = "ND_Ambulance:startDefib",
+        icon = "fa-solid fa-heart-pulse",
+        label = "Use defibrillator",
+        distance = 1.5,
+        canInteract = function(entity, distance, coords, name, bone)
+            local prop = GetClosestObjectOfType(coords.x, coords.y, coords.z, 5.0, `lifepak15`, false, false, false)
+            if not prop or not DoesEntityExist(prop) then return end
+
+            local player = NetworkGetPlayerIndexFromPed(entity)
+            local serverId = GetPlayerServerId(player)
+            return Player(serverId).state.isDead == "eliminated"
+        end,
+        onSelect = function(data)
+            local player = NetworkGetPlayerIndexFromPed(data.entity)
+            local serverId = GetPlayerServerId(player)
+            local state = Player(serverId).state
+            local timeSinceDeath = state.timeSinceDeath or 0
+
+            if not lib.progressBar({
+                duration = 3000,
+                label = "Ready?",
+                useWhileDead = false,
+                canCancel = true,
+                disable = { car = true }
+            }) then return end
+
+            if not lib.skillCheck("medium") then
+                return NDCore.notify({
+                    title = "Defibrillator: unsuccessful",
+                    type = "error",
+                    icon = "heart-pulse",
+                    duration = 7000
+                })
+            end
+
+            if not lib.progressCircle({
+                duration = 3000,
+                position = "bottom",
+                useWhileDead = false,
+                disable = { car = true }
+            }) then return end
+
+            
+            if GetCloudTimeAsInt()-timeSinceDeath > 30 or math.random(1, 10) == 1 then
+                return NDCore.notify({
+                    title = "Defibrillator: unsuccessful",
+                    type = "error",
+                    icon = "heart-pulse",
+                    duration = 7000
+                })
+            end
+
+            NDCore.notify({
+                title = "Defibrillator: successful",
+                type = "success",
+                icon = "heart-pulse",
+                duration = 7000
+            })
+
+            TriggerServerEvent("ND_Ambulance:successDefib", serverId)
+        end
+    }
+})

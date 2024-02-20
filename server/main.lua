@@ -86,6 +86,20 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
     targetPlayer.notify("Succesfully healed!")
 end)
 
+RegisterNetEvent("ND_Ambulance:successDefib", function(targetPlayerSrc)
+    local src = source
+    targetPlayerSrc = tonumber(targetPlayerSrc)
+    if not targetPlayerSrc then return end
+
+    local ped = GetPlayerPed(src)
+    local coords = GetEntityCoords(ped)
+    local targetPed = GetPlayerPed(targetPlayerSrc)
+    local targetCoords = GetEntityCoords(targetPed)
+    local state = Player(targetPlayerSrc).state
+    if src == targetPlayerSrc or #(coords-targetCoords) > 10 or state.isDead ~= "eliminated" or os.time()-state.timeSinceDeath > 30 then return end
+    TriggerClientEvent("ND_Ambulance:successDefib", targetPlayerSrc)
+end)
+
 RegisterNetEvent("ND_Ambulance:pickupDefib", function()
     local src = source
     local ped = GetPlayerPed(src)

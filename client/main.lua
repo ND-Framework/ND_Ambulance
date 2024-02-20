@@ -418,3 +418,9 @@ local respawnKeybind = lib.addKeybind({
 })
 
 respawnKeybindLetter = GetControlInstructionalButton(0, respawnKeybind.hash, 1):sub(3)
+
+RegisterNetEvent("ND_Ambulance:successDefib", function()
+    if source == "" then return end
+    deathState = nil
+    setDeathState("knocked")
+end)
