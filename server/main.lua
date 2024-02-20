@@ -85,3 +85,26 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
     targetPlayer.revive()
     targetPlayer.notify("Succesfully healed!")
 end)
+
+RegisterNetEvent("ND_Ambulance:pickupDefib", function()
+    local src = source
+    local ped = GetPlayerPed(src)
+    local coords = GetEntityCoords(ped)
+    local objects = lib.getNearbyObjects(coords, 2.0)
+    for i=1, #objects do
+        local entity = objects[i].object
+        if DoesEntityExist(entity) and GetEntityModel(entity) == `lifepak15` then
+            DeleteEntity(entity)
+            return exports.ox_inventory:AddItem(src, "defib", 1)
+        end
+    end
+end)
+
+exports.ox_inventory:registerHook("swapItems", function(payload)
+    if payload.toType ~= "player" or payload.fromInventory == payload.toInventory then return end
+    return exports.ox_inventory:GetItemCount(payload.toInventory, "defib") == 0
+end, {
+    itemFilter = {
+        defib = true
+    }
+})
