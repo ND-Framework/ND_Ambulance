@@ -55,7 +55,7 @@ lib.callback.register("ND_Ambulance:bagStatus", function(source, enable)
     end
 
     local stashWeight
-    if bag.metadata.stashId then
+    if bag.metadata.stashId and exports.ox_inventory:GetInventory(bag.metadata.stashId) then
         stashWeight = getWeightFromInventory(bag.metadata.stashId)
     end
 
