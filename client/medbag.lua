@@ -45,11 +45,7 @@ end
 
 local function enableBag(enable)
     local count = exports.ox_inventory:GetItemCount("medbag")
-    if count > 1 and enable then
-        return
-    elseif count > 1 and not enable then
-        return
-    end
+    if count > 1 and enable or count > 1 and not enable then return end
     
     local netId = lib.callback.await("ND_Ambulance:bagStatus", false, enable)
     if not enable or not netId then return
@@ -61,7 +57,7 @@ local function enableBag(enable)
         return resetWalk()
     end
     
-    AttachEntityToEntity(obj, cache.ped, GetPedBoneIndex(cache.ped, 0xDEAD), 0.4, -0.1, -0.03, -49.87, -85.0, -18.29, true, true, false, true, 2, true)
+    AttachEntityToEntity(obj, cache.ped, GetPedBoneIndex(cache.ped, 0xDEAD), 0.38, -0.1, -0.02, -86.87, -85.0, -18.29, true, true, false, true, 2, true)
     bagProp.entity = obj
     bagProp.netId = netId
 
