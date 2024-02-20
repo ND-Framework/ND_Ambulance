@@ -106,7 +106,7 @@ exports.ox_target:addGlobalPlayer({
         name = "ND_Ambulance:carryNearby",
         icon = "fa-solid fa-hand-holding",
         label = "Carry",
-        distance = 4.0,
+        distance = 1.5,
         canInteract = function(entity, distance, coords, name, bone)
             local player = NetworkGetPlayerIndexFromPed(entity)
             local serverId = GetPlayerServerId(player)

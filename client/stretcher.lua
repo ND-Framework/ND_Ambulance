@@ -155,7 +155,7 @@ ox_target:addGlobalPlayer({
         name = "ND_Ambulance:pickupStretcher",
         icon = "fa-solid fa-download",
         label = "Place on stretcher",
-        distance = 4.0,
+        distance = 1.5,
         canInteract = function(entity, distance, coords, name, bone)
             return isTargetDead(entity) and getClosestStretcher(coords)
         end,
