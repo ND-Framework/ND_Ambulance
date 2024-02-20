@@ -69,6 +69,21 @@ local function enableBag(enable)
     SetPedMovementClipset(cache.ped, "clipset@move@trash_fast_turn", 0.1)
     SetPlayerSprint(cache.playerId, false)
     SetPedMoveRateOverride(cache.ped, 0.95)
+    
+    CreateThread(function()
+        lib.requestAnimDict("anim@heists@narcotics@trash")
+        
+        while bagProp.entity and DoesEntityExist(bagProp.entity) do
+            Wait(100)
+            local moving = IsPedWalking(cache.ped) or IsPedSprinting(cache.ped) or IsPedRunning(cache.ped)
+            if not moving and not IsEntityPlayingAnim(cache.ped, "anim@heists@narcotics@trash", "idle", 3)then
+                TaskPlayAnim(cache.ped, "anim@heists@narcotics@trash", "idle", 1.0, 1.0, -1, 49, 0, false, false, false)
+            elseif moving and IsEntityPlayingAnim(cache.ped, "anim@heists@narcotics@trash", "idle", 3) then
+                StopAnimTask(cache.ped, "anim@heists@narcotics@trash", "idle", 2.0)
+            end
+        end
+        StopAnimTask(cache.ped, "anim@heists@narcotics@trash", "idle", 2.0)
+    end)
 end
 
 AddEventHandler("onResourceStart", function(name)
@@ -76,16 +91,24 @@ AddEventHandler("onResourceStart", function(name)
     enableBag(true)
 end)
 
+AddEventHandler("onResourceStop", function(name)
+    if cache.resource ~= name or exports.ox_inventory:GetItemCount("medbag") == 0 then return end
+    resetWalk()
+end)
+
 exports("useBag", function(data)
     if not bagProp.entity or not DoesEntityExist(bagProp.entity) then return end
+
+    local entity = bagProp.entity
+    bagProp = {}
+    Wait(100)
 
     lib.requestAnimDict("anim@heists@money_grab@briefcase")
     TaskPlayAnim(cache.ped, "anim@heists@money_grab@briefcase", "put_down_case", 2.0, 8.0, 2000, 32, 0, false, false, false)
     
     Wait(800)
-    DetachEntity(bagProp.entity)
+    DetachEntity(entity)
     exports.ox_inventory:useItem(data)
-    bagProp = {}
     resetWalk()
 end)
 
