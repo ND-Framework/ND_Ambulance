@@ -86,8 +86,7 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
     targetPlayer.notify("Succesfully healed!")
 end)
 
-RegisterNetEvent("ND_Ambulance:successDefib", function(targetPlayerSrc)
-    local src = source
+local function allowCheck(src, targetPlayerSrc)
     targetPlayerSrc = tonumber(targetPlayerSrc)
     if not targetPlayerSrc then return end
 
@@ -96,7 +95,66 @@ RegisterNetEvent("ND_Ambulance:successDefib", function(targetPlayerSrc)
     local targetPed = GetPlayerPed(targetPlayerSrc)
     local targetCoords = GetEntityCoords(targetPed)
     local state = Player(targetPlayerSrc).state
-    if src == targetPlayerSrc or #(coords-targetCoords) > 10 or state.isDead ~= "eliminated" or os.time()-state.timeSinceDeath > 30 then return end
+    if src == targetPlayerSrc or #(coords-targetCoords) > 10 or state.isDead ~= "eliminated" then return end
+
+    return true
+end
+
+RegisterNetEvent("ND_Ambulance:startCpr", function(targetPlayerSrc)
+    local src = source
+    if not allowCheck(src, targetPlayerSrc) then return end
+    
+    local playerState = Player(src).state
+    playerState:set("performingCpr", targetPlayerSrc, false)
+
+    local state = Player(targetPlayerSrc).state
+    local cprData = state.cprData or {}
+    state:set("cprData", {
+        ongoing = true,
+        started = cprData.started or os.time(),
+        stopped = false
+    }, true)
+end)
+
+RegisterNetEvent("ND_Ambulance:stopCpr", function(targetPlayerSrc)
+    local src = source
+    if not allowCheck(src, targetPlayerSrc) then return end
+    
+    local playerState = Player(src).state
+    playerState:set("performingCpr", nil, false)
+
+    local state = Player(targetPlayerSrc).state
+    local cprData = state.cprData or {}
+    local time = os.time()
+    state:set("cprData", {
+        ongoing = false,
+        started = cprData.started or time,
+        stopped = time
+    }, true)
+end)
+
+RegisterNetEvent("ND:characterUnloaded", function(src, character)
+    local playerState = Player(src).state
+    if not playerState.performingCpr then return end
+
+    local state = Player(playerState.performingCpr).state
+    if state.cprData then        
+        local cprData = state.cprData or {}
+        local time = os.time()
+        state:set("cprData", {
+            ongoing = false,
+            started = cprData.started or time,
+            stopped = time
+        }, true)
+    end
+
+    playerState:set("performingCpr", nil, false)
+end)
+
+RegisterNetEvent("ND_Ambulance:successDefib", function(targetPlayerSrc)
+    local src = source
+    local state = Player(targetPlayerSrc).state
+    if not allowCheck(src, targetPlayerSrc) then return end
     TriggerClientEvent("ND_Ambulance:successDefib", targetPlayerSrc)
 end)
 

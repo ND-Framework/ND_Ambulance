@@ -66,6 +66,16 @@ exports("hasDefib", enableDefib)
 
 exports.ox_target:addModel(`lifepak15`, options)
 
+local function cprValid(time, cprData, timeSinceDeath)
+    if not cprData or not cprData.started then return end
+
+    if cprData.ongoing or not cprData.stopped then return end
+
+    if time-cprData.stopped > 30 or timeSinceDeath-cprData.started > 30 then return end
+
+    return true
+end
+
 exports.ox_target:addGlobalPlayer({
     {
         name = "ND_Ambulance:checkVital",
@@ -107,7 +117,7 @@ exports.ox_target:addGlobalPlayer({
                 if GetCloudTimeAsInt()-timeSinceDeath < 30 then
                     NDCore.notify({
                         title = "Vital signs",
-                        description = "No pulse detected. Initiating life-saving measures & transport to medical facility recommended.",
+                        description = "No pulse detected. Initiate life-saving measures & transport to medical facility recommended.",
                         type = "inform",
                         icon = "heart-pulse",
                         duration = 8000
@@ -126,7 +136,7 @@ exports.ox_target:addGlobalPlayer({
     },
     {
         name = "ND_Ambulance:startDefib",
-        icon = "fa-solid fa-heart-pulse",
+        icon = "fa-solid fa-heart-circle-bolt",
         label = "Use defibrillator",
         distance = 1.5,
         canInteract = function(entity, distance, coords, name, bone)
@@ -154,9 +164,10 @@ exports.ox_target:addGlobalPlayer({
             if not lib.skillCheck("medium") then
                 return NDCore.notify({
                     title = "Defibrillator: unsuccessful",
+                    description = "Defibrillator check failed.",
                     type = "error",
-                    icon = "heart-pulse",
-                    duration = 7000
+                    icon = "heart-circle-bolt",
+                    duration = 6000
                 })
             end
 
@@ -167,21 +178,37 @@ exports.ox_target:addGlobalPlayer({
                 disable = { car = true }
             }) then return end
 
-            
-            if GetCloudTimeAsInt()-timeSinceDeath > 30 or math.random(1, 10) == 1 then
+            local time = GetCloudTimeAsInt()
+            local cprData = state.cprData
+            local diedAgo = time-timeSinceDeath > 30
+            local performedCpr = cprValid(time, cprData, timeSinceDeath)
+
+            if not performedCpr and diedAgo then
                 return NDCore.notify({
                     title = "Defibrillator: unsuccessful",
+                    description = "Patient deceased, unable to be revived!",
                     type = "error",
-                    icon = "heart-pulse",
-                    duration = 7000
+                    icon = "heart-circle-bolt",
+                    duration = 6000
+                })
+            end
+
+            if math.random(1, 10) == 1 then
+                return NDCore.notify({
+                    id = "ND_Ambulance:cprValid",
+                    title = "Defibrillator: unsuccessful",
+                    description = "Defibrillator was ineffective on this patient.",
+                    type = "error",
+                    icon = "heart-circle-bolt",
+                    duration = 6000
                 })
             end
 
             NDCore.notify({
                 title = "Defibrillator: successful",
                 type = "success",
-                icon = "heart-pulse",
-                duration = 7000
+                icon = "heart-circle-bolt",
+                duration = 6000
             })
 
             TriggerServerEvent("ND_Ambulance:successDefib", serverId)

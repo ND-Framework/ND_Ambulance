@@ -294,6 +294,7 @@ RegisterNetEvent("ND:revivePlayer", function()
     local state = Player(cache.serverId).state
     state:set("isDead", false, true)
     state:set("injuries", false, true)
+    state:set("cprData", nil, true)
     LocalPlayer.state.dead = false
     LocalPlayer.state.onStretcher = false
     
