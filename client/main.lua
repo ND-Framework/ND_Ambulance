@@ -425,3 +425,25 @@ RegisterNetEvent("ND_Ambulance:successDefib", function()
     deathState = nil
     setDeathState("knocked")
 end)
+
+AddStateBagChangeHandler("injuries", nil, function(bagName, key, value, reserved, replicated)
+    local ply = GetPlayerFromStateBagName(bagName)
+    if ply == 0 or replicated then return end
+    
+    local src = GetPlayerServerId(ply)
+    if src ~= cache.serverId or not value then return end
+
+    for bone, limb in pairs(bodyBonesDamage) do
+        local updatedLimb = value[bone]
+        if updatedLimb then
+            limb.suffocating = updatedLimb.suffocating
+            limb.fracture = updatedLimb.fracture
+            limb.burn = updatedLimb.burn
+            limb.bleeding = updatedLimb.bleeding
+            limb.severity = updatedLimb.severity
+        end
+    end
+
+    bleeding = GetTotalDamageType(bodyBonesDamage, "bleeding")
+    hurtWalk()
+end)

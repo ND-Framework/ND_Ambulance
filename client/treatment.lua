@@ -1,6 +1,7 @@
 local damageStrings = {"Fractures: %s", "Burns: %s", "Bleeding: %s", "Suffocation: %s"}
 local damageTypes = {"fracture", "burn", "bleeding", "suffocating"}
-local help = {"Treatment: splint", "Treatment: dressing", "Treatment: gauze, bandages or tourniquet", "Treatment: cpr"}
+local help = {"Treatment: splint", "Treatment: burn dressing", "Treatment: gauze or tourniquet", "Treatment: cpr"}
+local injuryTreatment = {"fracture", "burn", "bleeding", "suffocating"}
 
 local function getDamageText(damage)
     if not damage then return end
@@ -63,13 +64,14 @@ function CheckPlayerInjuries(player)
         if text then
             options[#options+1] = {
                 label = damageStrings[i]:format(text),
-                description = help[i]
+                description = help[i],
+                args = injuryTreatment[i]
             }
         end
     end
 
-    for _, k in pairs(sortedKeys(info)) do
-        local bodyPart = info[k]
+    for _, part in pairs(sortedKeys(info)) do
+        local bodyPart = info[part]
         local label = bodyPart.label
         local damage = getDamageText(bodyPart.severity)
         local injury = table.concat(bodyPart.injury, ", ")
@@ -98,7 +100,10 @@ function CheckPlayerInjuries(player)
         title = "Check injuries",
         position = "top-right",
         options = options
-    })
+    }, function(selected, scrollIndex, args)
+        if not args or type(args) ~= "string" then return end
+        TriggerServerEvent("ND_Ambulance:useOnNearby", player, args)
+    end)
     lib.showMenu("ND_Ambulance:checkInjuries")
 end
 
