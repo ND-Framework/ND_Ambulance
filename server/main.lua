@@ -114,6 +114,20 @@ RegisterNetEvent("ND_Ambulance:startCpr", function(targetPlayerSrc)
         started = cprData.started or os.time(),
         stopped = false
     }, true)
+    
+    local changed = false
+    local injuries = state.injuries
+    for bone, limb in pairs(injuries) do
+        if limb and limb.suffocating and limb.severity and limb.severity > 0 then
+            limb.severity -= limb.suffocating
+            limb.suffocating = nil
+            changed = true
+        end
+    end
+
+    if changed then
+        state:set("injuries", injuries, true)
+    end
 end)
 
 RegisterNetEvent("ND_Ambulance:stopCpr", function(targetPlayerSrc)
