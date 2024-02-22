@@ -1,5 +1,8 @@
 # ND_Ambulance
-Ambulance job for ND Framework
+Ambulance job for ND Framework.
+
+# Credits
+* Tiddy's Factory for providing the stretchers and defibrillator from their [medical prop pack](https://gta5-mods.com/tools/medical-prop-pack)
 
 # Features
 * stretcher system
