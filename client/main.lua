@@ -368,7 +368,7 @@ end)
 
 exports("updateBodyDamage", function(bone, damageWeapon)
     local boneName = data_bones[bone]
-    if not boneName then return end
+    if not boneName or not damageWeapon then return end
 
     local boneInfo = bodyBonesDamage[boneName]
     local updateDamageOn = {"fracture", "burn", "bleeding", "suffocating"}
