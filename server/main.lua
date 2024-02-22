@@ -16,6 +16,20 @@ local function getEntityFromNetId(netId)
     return entity
 end
 
+local function allowCheck(src, targetPlayerSrc)
+    targetPlayerSrc = tonumber(targetPlayerSrc)
+    if not targetPlayerSrc then return end
+
+    local ped = GetPlayerPed(src)
+    local coords = GetEntityCoords(ped)
+    local targetPed = GetPlayerPed(targetPlayerSrc)
+    local targetCoords = GetEntityCoords(targetPed)
+    local state = Player(targetPlayerSrc).state
+    if src == targetPlayerSrc or #(coords-targetCoords) > 10 or state.isDead ~= "eliminated" then return end
+
+    return true
+end
+
 RegisterNetEvent("ND_Ambulance:respawnPlayer", function()
     local src = source
     local state = Player(src).state
@@ -85,20 +99,6 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
     targetPlayer.revive()
     targetPlayer.notify("Succesfully healed!")
 end)
-
-local function allowCheck(src, targetPlayerSrc)
-    targetPlayerSrc = tonumber(targetPlayerSrc)
-    if not targetPlayerSrc then return end
-
-    local ped = GetPlayerPed(src)
-    local coords = GetEntityCoords(ped)
-    local targetPed = GetPlayerPed(targetPlayerSrc)
-    local targetCoords = GetEntityCoords(targetPed)
-    local state = Player(targetPlayerSrc).state
-    if src == targetPlayerSrc or #(coords-targetCoords) > 10 or state.isDead ~= "eliminated" then return end
-
-    return true
-end
 
 RegisterNetEvent("ND_Ambulance:startCpr", function(targetPlayerSrc)
     local src = source
