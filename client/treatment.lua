@@ -1,6 +1,7 @@
 local damageStrings = {"Fractures: %s", "Burns: %s", "Bleeding: %s", "Suffocation: %s"}
 local damageTypes = {"fracture", "burn", "bleeding", "suffocating"}
-local help = {"Treatment: splint", "Treatment: dressing", "Treatment: gauze, bandages or tourniquet", "Treatment: cpr"}
+local help = {"Treatment: splint", "Treatment: burn dressing", "Treatment: gauze or tourniquet", "Treatment: cpr"}
+local injuryTreatment = {"fracture", "burn", "bleeding", "suffocating"}
 
 local function getDamageText(damage)
     if not damage then return end
@@ -45,22 +46,14 @@ end
 function CheckPlayerInjuries(player)
     local state = Player(player).state
     local info = state.injuries
+
     if not info or tableLength(info) == 0 then
-        if state.isDead then
-            lib.registerMenu({
-                id = "ND_Ambulance:checkInjuries",
-                title = "Check injuries",
-                position = "top-right",
-                options = {{label = "Person dead"}}
-            })
-        else
-            lib.registerMenu({
-                id = "ND_Ambulance:checkInjuries",
-                title = "Check injuries",
-                position = "top-right",
-                options = {{label = "No injuries"}}
-            })
-        end
+        lib.registerMenu({
+            id = "ND_Ambulance:checkInjuries",
+            title = "Check injuries",
+            position = "top-right",
+            options = {{label = "No injuries"}}
+        })
         return lib.showMenu("ND_Ambulance:checkInjuries")
     end
 
@@ -71,17 +64,18 @@ function CheckPlayerInjuries(player)
         if text then
             options[#options+1] = {
                 label = damageStrings[i]:format(text),
-                description = help[i]
+                description = help[i],
+                args = injuryTreatment[i]
             }
         end
     end
 
-    for _, k in pairs(sortedKeys(info)) do
-        local bodyPart = info[k]
+    for _, part in pairs(sortedKeys(info)) do
+        local bodyPart = info[part]
         local label = bodyPart.label
         local damage = getDamageText(bodyPart.severity)
         local injury = table.concat(bodyPart.injury, ", ")
-        print("test", bodyPart, label, damage, injury)
+        
         if damage and injury and injury ~= "" then
             options[#options+1] = {
                 label = ("%s: %s injury"):format(label, damage),
@@ -98,8 +92,7 @@ function CheckPlayerInjuries(player)
             position = "top-right",
             options = {{label = "No injuries"}}
         })
-        lib.showMenu("ND_Ambulance:checkInjuries")
-        return
+        return lib.showMenu("ND_Ambulance:checkInjuries")
     end
 
     lib.registerMenu({
@@ -107,6 +100,31 @@ function CheckPlayerInjuries(player)
         title = "Check injuries",
         position = "top-right",
         options = options
-    })
+    }, function(selected, scrollIndex, args)
+        if not args or type(args) ~= "string" then return end
+        TriggerServerEvent("ND_Ambulance:useOnNearby", player, args)
+    end)
     lib.showMenu("ND_Ambulance:checkInjuries")
 end
+
+RegisterCommand("injuries", function(source, args, rawCommand)
+    CheckPlayerInjuries(cache.serverId)
+end, false)
+
+exports.ox_target:addGlobalPlayer({
+    {
+        name = "ND_Ambulance:checkInjuries",
+        icon = "fa-solid fa-notes-medical",
+        label = "Check injuries",
+        distance = 1.5,
+        canInteract = function(entity, distance, coords, name, bone)
+            local player = NetworkGetPlayerIndexFromPed(entity)
+            local serverId = GetPlayerServerId(player)
+            return Player(serverId).state.isDead
+        end,
+        onSelect = function(data)
+            local player = NetworkGetPlayerIndexFromPed(data.entity)
+            CheckPlayerInjuries(GetPlayerServerId(player))
+        end
+    },
+})

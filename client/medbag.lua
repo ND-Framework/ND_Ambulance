@@ -1,6 +1,5 @@
-local bagOptionsAdded = false
 local bagProp = {}
-local bagStashes = {}
+
 local bagOptions = {
     {
         name = "ND_Ambulance:medbag:pickup",
@@ -8,14 +7,13 @@ local bagOptions = {
         label = "Pick up",
         distance = 1.5,
         onSelect = function(data)
-            local netId = ObjToNet(data.entity)
-            if not bagStashes[netId] then return end
+            if not Entity(data.entity).state.stashId then return end
 
             lib.requestAnimDict("anim@mp_snowball")
             TaskPlayAnim(cache.ped, "anim@mp_snowball", "pickup_snowball", 2.0, 8.0, 1000, 32, 0, false, false, false)
 
             Wait(500)
-            TriggerServerEvent("ND_Ambulance:pickupBag", netId)
+            TriggerServerEvent("ND_Ambulance:pickupBag", ObjToNet(data.entity))
         end
     },
     {
@@ -24,11 +22,9 @@ local bagOptions = {
         label = "Open",
         distance = 1.5,
         onSelect = function(data)
-            local netId = ObjToNet(data.entity)
-            local stash = bagStashes[netId]
-            if not stash then return end
-            local canOpen = exports.ox_inventory:openInventory("stash", stash)
-            if not canOpen then return end
+            local state = Entity(data.entity).state
+            local stash = state.stashId
+            if not stash or not exports.ox_inventory:openInventory("stash", stash) then return end
 
             lib.requestAnimDict("amb@medic@standing@tendtodead@idle_a")
             TaskPlayAnim(cache.ped, "amb@medic@standing@tendtodead@idle_a", "idle_b", 2.0, 8.0, -1, 15, 0, false, false, false)
@@ -37,8 +33,6 @@ local bagOptions = {
             lib.requestAnimDict("amb@medic@standing@tendtodead@exit")
             StopAnimTask(cache.ped, "amb@medic@standing@tendtodead@idle_a", "idle_b", 8.0)
             TaskPlayAnim(cache.ped, "amb@medic@standing@tendtodead@exit", "exit", 2.0, 8.0, 2500, 15, 0, false, false, false)
-
-            -- ClearPedTasks(cache.ped) -- test exit anim.
         end
     }
 }
@@ -51,11 +45,7 @@ end
 
 local function enableBag(enable)
     local count = exports.ox_inventory:GetItemCount("medbag")
-    if count > 1 and enable then
-        return
-    elseif count > 1 and not enable then
-        return
-    end
+    if count > 1 and enable or count > 1 and not enable then return end
     
     local netId = lib.callback.await("ND_Ambulance:bagStatus", false, enable)
     if not enable or not netId then return
@@ -67,40 +57,57 @@ local function enableBag(enable)
         return resetWalk()
     end
     
-    AttachEntityToEntity(obj, cache.ped, GetPedBoneIndex(cache.ped, 0xDEAD), 0.4, -0.1, -0.03, -49.87, -85.0, -18.29, true, true, false, true, 2, true)
+    AttachEntityToEntity(obj, cache.ped, GetPedBoneIndex(cache.ped, 0xDEAD), 0.38, -0.1, -0.02, -86.87, -85.0, -18.29, true, true, false, true, 2, true)
     bagProp.entity = obj
     bagProp.netId = netId
 
     lib.requestAnimSet("clipset@move@trash_fast_turn")
-    SetPedMovementClipset(cache.ped, "clipset@move@trash_fast_turn", 1)
+    SetPedMovementClipset(cache.ped, "clipset@move@trash_fast_turn", 0.1)
     SetPlayerSprint(cache.playerId, false)
     SetPedMoveRateOverride(cache.ped, 0.95)
+    
+    CreateThread(function()
+        lib.requestAnimDict("anim@heists@narcotics@trash")
+        
+        while bagProp.entity and DoesEntityExist(bagProp.entity) do
+            Wait(100)
+            local moving = IsPedWalking(cache.ped) or IsPedSprinting(cache.ped) or IsPedRunning(cache.ped)
+            if not moving and not IsEntityPlayingAnim(cache.ped, "anim@heists@narcotics@trash", "idle", 3)then
+                TaskPlayAnim(cache.ped, "anim@heists@narcotics@trash", "idle", 1.0, 1.0, -1, 49, 0, false, false, false)
+            elseif moving and IsEntityPlayingAnim(cache.ped, "anim@heists@narcotics@trash", "idle", 3) then
+                StopAnimTask(cache.ped, "anim@heists@narcotics@trash", "idle", 2.0)
+            end
+        end
+        StopAnimTask(cache.ped, "anim@heists@narcotics@trash", "idle", 2.0)
+    end)
 end
 
 AddEventHandler("onResourceStart", function(name)
-    if cache.resource ~= name then return end
-    if exports.ox_inventory:GetItemCount("medbag") == 0 then return end
+    if cache.resource ~= name or exports.ox_inventory:GetItemCount("medbag") == 0 then return end
     enableBag(true)
 end)
 
-exports("bag", enableBag)
+AddEventHandler("onResourceStop", function(name)
+    if cache.resource ~= name or exports.ox_inventory:GetItemCount("medbag") == 0 then return end
+    resetWalk()
+end)
 
 exports("useBag", function(data)
     if not bagProp.entity or not DoesEntityExist(bagProp.entity) then return end
+
+    local entity = bagProp.entity
+    bagProp = {}
+    Wait(100)
 
     lib.requestAnimDict("anim@heists@money_grab@briefcase")
     TaskPlayAnim(cache.ped, "anim@heists@money_grab@briefcase", "put_down_case", 2.0, 8.0, 2000, 32, 0, false, false, false)
     
     Wait(800)
-    DetachEntity(bagProp.entity)
+    DetachEntity(entity)
     exports.ox_inventory:useItem(data)
-    bagProp = {}
     resetWalk()
 end)
 
-RegisterNetEvent("ND_Ambulance:syncBagOptions", function(netId, stash)
-    bagStashes[netId] = stash
-    if bagOptionsAdded then return end
-    bagOptionsAdded = true
-    exports.ox_target:addModel({`xm_prop_x17_bag_med_01a`}, bagOptions)
-end)
+exports("bag", enableBag)
+
+exports.ox_target:addModel(`xm_prop_x17_bag_med_01a`, bagOptions)

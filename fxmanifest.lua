@@ -14,18 +14,25 @@ dependencies {
     "ND_Core"
 }
 
+files {
+    "stream/*.ytyp",
+    "data/**",
+    "ui/**"
+}
+
+data_file "DLC_ITYP_REQUEST" "stream/*.ytyp"
+ui_page "ui/index.html"
+
 shared_scripts {
     "@ox_lib/init.lua",
-    "@ND_Core/init.lua",
-    "data.lua"
+    "@ND_Core/init.lua"
 }
-server_scripts {
-    "server/main.lua",
-    "server/body.lua",
-    "server/items/**"
-}
+
 client_scripts {
-    "client/body.lua",
-    "client/job.lua",
-    "client/items/**"
+    "client/**"
+}
+
+server_scripts {
+    "server/*.lua",
+    "server/items/*.lua"
 }
