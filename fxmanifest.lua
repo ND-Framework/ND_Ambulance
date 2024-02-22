@@ -15,10 +15,12 @@ dependencies {
 }
 
 files {
+    "stream/*.ytyp",
     "data/**",
     "ui/**"
 }
 
+data_file "DLC_ITYP_REQUEST" "stream/*.ytyp"
 ui_page "ui/index.html"
 
 shared_scripts {
