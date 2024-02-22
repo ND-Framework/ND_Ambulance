@@ -32,6 +32,15 @@ local function getEntityFromNetId(netId)
     return entity
 end
 
+local function getEntityCoordOffset(entity, offsetX, offsetY, offsetZ)
+    local heading = GetEntityHeading(entity)
+    local x = offsetX * math.cos(math.rad(heading)) - offsetY * math.sin(math.rad(heading))
+    local y = offsetX * math.sin(math.rad(heading)) + offsetY * math.cos(math.rad(heading))
+    local z = offsetZ
+    local entityCoords = GetEntityCoords(entity)
+    return vector3(entityCoords.x + x, entityCoords.y + y, entityCoords.z + z), heading
+end
+
 RegisterNetEvent("ND_Ambulance:changeStretcher", function(lower, netId)
     local entity = getEntityFromNetId(netId)
     if not DoesEntityExist(entity) then return end
@@ -170,4 +179,14 @@ RegisterNetEvent("ND_Ambulance:detachStretcher", function(ambulanceNetId)
         local state = Entity(prop).state
         state:set("ambulanceStretcherPlayer", attachedPlayer, true)
     end
+end)
+
+exports("createStretcher", function(event, item, inventory, slot, data)
+    if event ~= "usedItem" then return end
+
+    local ped = GetPlayerPed(inventory.id)
+    local coords, heading = getEntityCoordOffset(ped, 0.0, 1.5, -1.0)
+    local prop = CreateObject(`fernocot`, coords.x, coords.y, coords.z, true, true, false)
+
+    SetEntityHeading(prop, heading+90)
 end)

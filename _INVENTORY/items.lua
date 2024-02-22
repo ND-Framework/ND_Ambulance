@@ -1,3 +1,12 @@
+["stretcher"] = {
+    label = "Stretcher",
+    weight = 57000,
+    stack = false,
+    consume = 1,
+    server = {
+        export = "ND_Ambulance.createStretcher"
+    }
+},
 ["defib"] = {
     label = "Monitor/defibrillator",
     weight = 8000,
