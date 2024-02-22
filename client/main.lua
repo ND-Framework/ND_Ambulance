@@ -195,7 +195,11 @@ local function setDead(ped, dict, clip, newDeathState)
                 local time = GetCloudTimeAsInt()
                 if time-lastCheckTime > data_death.damageInterval then
                     lastCheckTime = time
-                    ApplyDamageToPed(ped, data_death.damage)
+
+                    if bleeding and bleeding > 0 then
+                        ApplyDamageToPed(ped, data_death.damage)
+                    end
+
                     DoScreenFadeOut(500)
                     SetTimeout(200, function()
                         DoScreenFadeIn(500)
