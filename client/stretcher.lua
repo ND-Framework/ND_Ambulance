@@ -55,6 +55,7 @@ end
 
 local function startMoveStretcher(ped, entity, playerState)
     BlockActions(true)
+    exports.ox_target:disableTargeting(false) -- disable so player can put stretcher in ambulance.
     lib.requestAnimDict("anim@move_m@prisoner_cuffed")
     lib.disableControls:Add(73, 22, 21, 23, 24, 25, 257, 36)
 
