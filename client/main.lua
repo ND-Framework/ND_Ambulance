@@ -233,6 +233,8 @@ local function setDeathState(newState)
     state:set("injuries", getInjuredBoneData(bodyBonesDamage), true)
     LocalPlayer.state.dead = true
 
+    BlockActions(true)
+
     downAnim = downAnim or getRandomDeathAnim()
     local anim = downAnim[cache.vehicle and "vehicle" or newState]
     local dict, clip = anim[1], anim[2]
@@ -301,6 +303,8 @@ RegisterNetEvent("ND:revivePlayer", function()
     state:set("cprData", nil, true)
     LocalPlayer.state.dead = false
     LocalPlayer.state.onStretcher = false
+
+    BlockActions(false)
     
     if GetPedMovementClipset(cache.ped) == `move_m@injured` then
         SetPedMoveRateOverride(cache.ped, 1.0)
