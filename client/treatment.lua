@@ -2,6 +2,8 @@ local damageStrings = {"Fractures: %s", "Burns: %s", "Bleeding: %s", "Suffocatio
 local damageTypes = {"fracture", "burn", "bleeding", "suffocating"}
 local help = {"Treatment: splint", "Treatment: burn dressing", "Treatment: gauze or tourniquet", "Treatment: cpr"}
 local injuryTreatment = {"fracture", "burn", "bleeding", "suffocating"}
+local player = NDCore.getPlayer()
+local jobs = lib.load("data.jobs")
 
 local function getDamageText(damage)
     if not damage then return end
@@ -43,8 +45,8 @@ local function tableLength(t)
     return count
 end
 
-function CheckPlayerInjuries(player)
-    local state = Player(player).state
+function CheckPlayerInjuries(targetSrc)
+    local state = Player(targetSrc).state
     local info = state.injuries
 
     if not info or tableLength(info) == 0 then
@@ -102,7 +104,7 @@ function CheckPlayerInjuries(player)
         options = options
     }, function(selected, scrollIndex, args)
         if not args or type(args) ~= "string" then return end
-        TriggerServerEvent("ND_Ambulance:useOnNearby", player, args)
+        TriggerServerEvent("ND_Ambulance:useOnNearby", targetSrc, args)
     end)
     lib.showMenu("ND_Ambulance:checkInjuries")
 end
@@ -111,6 +113,19 @@ RegisterCommand("injuries", function(source, args, rawCommand)
     CheckPlayerInjuries(cache.serverId)
 end, false)
 
+RegisterNetEvent("ND:characterLoaded", function(character)
+    player = character
+end)
+
+RegisterNetEvent("ND:updateCharacter", function(character)
+    player = character
+end)
+
+AddEventHandler("onResourceStart", function(resourceName)
+    if cache.resource ~= resourceName then return end
+    player = NDCore.getPlayer()
+end)
+
 exports.ox_target:addGlobalPlayer({
     {
         name = "ND_Ambulance:checkInjuries",
@@ -118,13 +133,13 @@ exports.ox_target:addGlobalPlayer({
         label = "Check injuries",
         distance = 1.5,
         canInteract = function(entity, distance, coords, name, bone)
-            local player = NetworkGetPlayerIndexFromPed(entity)
-            local serverId = GetPlayerServerId(player)
-            return Player(serverId).state.isDead
+            local targetPlayer = NetworkGetPlayerIndexFromPed(entity)
+            local serverId = GetPlayerServerId(targetPlayer)
+            return Player(serverId).state.isDead or player and lib.table.contains(jobs, player.job)
         end,
         onSelect = function(data)
-            local player = NetworkGetPlayerIndexFromPed(data.entity)
-            CheckPlayerInjuries(GetPlayerServerId(player))
+            local targetPlayer = NetworkGetPlayerIndexFromPed(data.entity)
+            CheckPlayerInjuries(GetPlayerServerId(targetPlayer))
         end
     },
 })
