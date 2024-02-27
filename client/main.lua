@@ -308,6 +308,11 @@ RegisterNetEvent("ND:revivePlayer", function()
     LocalPlayer.state.onStretcher = false
 
     BlockActions(false)
+
+    if knockedOut then
+        state:set("knockedout", false, true)
+        knockedOut = false
+    end
     
     if GetPedMovementClipset(cache.ped) == `move_m@injured` then
         SetPedMoveRateOverride(cache.ped, 1.0)
