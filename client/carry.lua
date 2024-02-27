@@ -116,4 +116,21 @@ exports.ox_target:addGlobalPlayer({
             carryNearbyPlayer()
         end
     },
+    {
+        name = "ND_Ambulance:searchPlayer",
+        icon = "fa-solid fa-magnifying-glass",
+        label = "Loot",
+        distance = 1.5,
+        canInteract = function(entity)
+            local player = NetworkGetPlayerIndexFromPed(entity)
+            local serverId = GetPlayerServerId(player)
+            local state = Player(serverId).state
+            return state.isDead or state.knockedout
+        end,
+        onSelect = function(data)
+            local targetPlayer = GetPlayerServerId(NetworkGetPlayerIndexFromPed(data.entity))
+            if not targetPlayer then return end
+            exports.ox_inventory:openInventory("player", targetPlayer)
+        end
+    }
 })
