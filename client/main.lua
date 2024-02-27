@@ -158,6 +158,9 @@ local function setDead(ped, dict, clip, newDeathState)
     else
         SendNUIMessage({ type = "knocked_down" })
         SetEntityHealth(ped, GetEntityMaxHealth(ped))
+        SetTimeout(500, function()
+            bleeding = 1.0
+        end)
     end
 
     CreateThread(function()
