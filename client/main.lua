@@ -4,6 +4,7 @@ local data_bone_settings = require("data.bone_settings")
 local data_bones = require("data.bones")
 local data_knockout = require("data.knockout")
 local data_death = require("data.death")
+local data_walks = require("data.walks")
 
 local respawnKeybindLetter = ""
 local randomDeathAnim = nil
@@ -14,6 +15,7 @@ local bleedOutTimer = nil
 local knockedOut = false
 local bleeding = 0
 local bodyBonesDamage = lib.table.deepclone(data_bone_settings)
+local oldMovement = nil
 
 function BlockActions(status)
     LocalPlayer.state.blockHandsUp = status
@@ -81,8 +83,20 @@ local function getNearestRespawnPoint()
     return nearestCoords
 end
 
+local function resetWalk()
+    local ped = cache.ped
+    if GetPedMovementClipset(ped) ~= `move_m@injured` then return end
+
+    SetPedMoveRateOverride(ped, 1.0)
+
+    local movement = data_walks[oldMovement]
+    return movement and SetPedMovementClipset(ped, movement, true) or ResetPedMovementClipset(ped, 0)
+end
+
 -- injured walking style set depending on body part injury.
 local function hurtWalk()
+    oldMovement = GetPedMovementClipset(cache.ped)
+
     for _, info in pairs(bodyBonesDamage) do        
         if info.causeLimp and info.severity > 1.0 then
             lib.requestAnimSet("move_m@injured")
@@ -92,10 +106,8 @@ local function hurtWalk()
             return true
         end
     end
-    if GetPedMovementClipset(cache.ped) == `move_m@injured` then
-        SetPedMoveRateOverride(cache.ped, 1.0)
-        ResetPedMovementClipset(cache.ped, 0)
-    end
+
+    resetWalk()
 end
 
 -- get body damage based on body parts.
@@ -307,17 +319,13 @@ RegisterNetEvent("ND:revivePlayer", function()
     LocalPlayer.state.dead = false
     LocalPlayer.state.onStretcher = false
 
-    BlockActions(false)
-
     if knockedOut then
         state:set("knockedout", false, true)
         knockedOut = false
     end
-    
-    if GetPedMovementClipset(cache.ped) == `move_m@injured` then
-        SetPedMoveRateOverride(cache.ped, 1.0)
-        ResetPedMovementClipset(cache.ped, 0)
-    end
+
+    BlockActions(false)
+    resetWalk()
 end)
 
 RegisterNetEvent("ND:characterLoaded", function(player)
