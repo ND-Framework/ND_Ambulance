@@ -3,6 +3,7 @@ Ambulance job for ND Framework.
 
 # Credits
 * Tiddy's Factory for providing the stretchers and defibrillator from their [medical prop pack](https://gta5-mods.com/tools/medical-prop-pack)
+* This resource is configured with the two Ambulance vehicles from [MRSA Pack](https://www.gta5-mods.com/vehicles/medical-response-san-andreas-mrsa-pack/) (can be changed in data/vehicles)
 
 # Features
 * stretcher system
