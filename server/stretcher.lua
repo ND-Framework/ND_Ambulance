@@ -41,7 +41,7 @@ local function getEntityCoordOffset(entity, offsetX, offsetY, offsetZ)
     return vector3(entityCoords.x + x, entityCoords.y + y, entityCoords.z + z), heading
 end
 
-RegisterNetEvent("ND_Ambulance:changeStretcher", function(lower, netId)
+lib.callback.register("ND_Ambulance:changeStretcher", function(source, netId, lower)
     local entity = getEntityFromNetId(netId)
     if not DoesEntityExist(entity) then return end
 
@@ -64,6 +64,8 @@ RegisterNetEvent("ND_Ambulance:changeStretcher", function(lower, netId)
         local state = Entity(prop).state
         state:set("ambulanceStretcherPlayer", attachedPlayer, true)
     end
+
+    return NetworkGetNetworkIdFromEntity(prop)
 end)
 
 RegisterNetEvent("ND_Ambulance:placePedOnStretcher", function(targetPlayer, stretcherNetId)

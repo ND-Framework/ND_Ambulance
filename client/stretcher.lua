@@ -48,6 +48,8 @@ local function stopMovingStretcher(playerState, entity)
 
     local ped = cache.ped
     DetachEntity(entity)
+    PlaceObjectOnGroundProperly(entity)
+
     if IsEntityPlayingAnim(ped, "anim@move_m@prisoner_cuffed", "idle", 3) then
         StopAnimTask(ped, "anim@move_m@prisoner_cuffed", "idle", 2.0)
     end
@@ -194,7 +196,10 @@ ox_target:addModel(getTargetStretcherModels(), {
         end,
         onSelect = function(data)
             if not data then return end
-            TriggerServerEvent("ND_Ambulance:changeStretcher", false, NetworkGetNetworkIdFromEntity(data.entity))
+            lib.callback("ND_Ambulance:changeStretcher", nil, function(netId)
+                if not NetworkDoesEntityExistWithNetworkId(netId) then return end
+                PlaceObjectOnGroundProperly(NetToObj(netId))
+            end, NetworkGetNetworkIdFromEntity(data.entity), false)
         end
     },
     {
@@ -207,7 +212,10 @@ ox_target:addModel(getTargetStretcherModels(), {
         end,
         onSelect = function(data)
             if not data then return end
-            TriggerServerEvent("ND_Ambulance:changeStretcher", true, NetworkGetNetworkIdFromEntity(data.entity))
+            lib.callback("ND_Ambulance:changeStretcher", nil, function(netId)
+                if not NetworkDoesEntityExistWithNetworkId(netId) then return end
+                PlaceObjectOnGroundProperly(NetToObj(netId))
+            end, NetworkGetNetworkIdFromEntity(data.entity), true)
         end
     },
     {
@@ -350,5 +358,3 @@ AddEventHandler("onResourceStop", function(resourceName)
     local playerState = Player(cache.serverId).state
     playerState:set("movingStretcher", nil, true)
 end)
-
-DisableIdleCamera(true)
