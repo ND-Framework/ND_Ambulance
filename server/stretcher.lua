@@ -1,4 +1,5 @@
 local stretcherModels = require("data.stretchers")
+local jobs = require("data.jobs")
 
 AddEventHandler("onResourceStop", function(resourceName)
     if cache.resource ~= resourceName then return end
@@ -15,6 +16,14 @@ AddEventHandler("onResourceStop", function(resourceName)
         end
     end
 end)
+
+local function checkHasGroup(groups)
+    for i=1, #jobs do
+        if groups[jobs[i]] then
+            return true
+        end
+    end
+end
 
 local function isModelStretcher(model, regular)
     for i=1, #stretcherModels do
@@ -192,3 +201,20 @@ exports("createStretcher", function(event, item, inventory, slot, data)
 
     SetEntityHeading(prop, heading+90)
 end)
+
+RegisterCommand("stretcher", function(source, args, rawCommand)
+    local player = NDCore.getPlayer(source)
+    if not player or checkHasGroup(player.groups) then return end
+
+    local pedCoords = GetEntityCoords(GetPlayerPed(source))
+    local objects = GetAllObjects()
+
+    for i=1, #objects do
+        local object = objects[i]
+        local model = GetEntityModel(object)
+        if (isModelStretcher(model, false) or isModelStretcher(model, true)) and #(pedCoords-GetEntityCoords(object)) < 2.5 then
+            DeleteEntity(object)
+            return exports.ox_inventory:AddItem(source, "stretcher", 1)
+        end
+    end
+end, false)
