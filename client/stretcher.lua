@@ -137,6 +137,8 @@ local function getAmbulanceModelConfig(model)
 end
 
 local function isDoorsOpen(entity, doors)
+    if not doors then return true end
+
     for i=1, #doors do
         local door = doors[i]
         if GetVehicleDoorAngleRatio(entity, door) == 0 and not IsVehicleDoorDamaged(entity, door) then
@@ -291,7 +293,7 @@ AddStateBagChangeHandler("hasStretcher", nil, function(bagName, key, value, rese
     AttachEntityToEntity(
         stretcher, veh, nil,
         offset.x, offset.y, offset.z,
-        0.0, 0.0, 90.0,
+        0.0, 0.0, offset.w,
         true, true, false,
         true, 1, true
     )
