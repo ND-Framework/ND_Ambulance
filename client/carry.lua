@@ -10,7 +10,8 @@ local function isDead(state, ped)
 end
 
 local function startCarry(dict, anim, flag, carryingState, carriedState, carryingPed, carriedPed)
-    BlockActions(true)
+    BlockActions(true, true, true)
+
     local carry = true
     CreateThread(function()
         while carry do

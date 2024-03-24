@@ -17,11 +17,16 @@ local bleeding = 0
 local bodyBonesDamage = lib.table.deepclone(data_bone_settings)
 local oldMovement = nil
 
-function BlockActions(status)
+function BlockActions(status, ignoreInv, ignoreTarget)
     LocalPlayer.state.blockHandsUp = status
-    LocalPlayer.state.invBusy = status
+
+    if not ignoreInv then
+        LocalPlayer.state.invBusy = status
+    end
     
-    exports.ox_target:disableTargeting(status)
+    if not ignoreTarget then
+        exports.ox_target:disableTargeting(status)
+    end
 
     if GetResourceState("npwd") == "started" then
         exports.npwd:setPhoneDisabled(status)
