@@ -318,6 +318,23 @@ local function setPlayerKnockedOut()
     end)
 end
 
+local function getPedHealthPercentage(ped)
+    local health = GetEntityHealth(ped)
+    local maxHealth = GetEntityMaxHealth(ped)
+    if health > maxHealth then
+        health = maxHealth
+    elseif health < 0 then
+        health = 0
+    end
+    
+    local total = (health/maxHealth)*100
+    local scalingFactor = (health/maxHealth)+((100-total)/60)
+    if scalingFactor < 0 then
+        scalingFactor = -scalingFactor
+    end
+    return (health / (maxHealth*scalingFactor))*100
+end
+
 -- ND Core death system event.
 AddEventHandler("ND:playerEliminated", function(info)
     Wait(2000)
@@ -420,6 +437,9 @@ exports("getBodyDamage", function()
 end)
 
 exports("updateBodyDamage", function(bone, damageWeapon)
+    local health = getPedHealthPercentage(cache.ped)
+    if health > 80 then return end
+
     local boneName = data_bones[bone]
     if not boneName or not damageWeapon then return end
 
@@ -458,7 +478,7 @@ local respawnKeybind = lib.addKeybind({
         if not LocalPlayer.state.dead then return end
 
         local state = Player(cache.serverId).state
-        if not state or GetCloudTimeAsInt()-state.timeSinceDeath < data_death.timer then return end
+        if not state or GetCloudTimeAsInt()-(state.timeSinceDeath or 0) < data_death.timer then return end
 
         deathState = nil
         DoScreenFadeOut(500)
