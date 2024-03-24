@@ -147,6 +147,14 @@ local function getRandomDeathAnim()
     return data_animations[math.random(1, #data_animations)]
 end
 
+local function getPlayerPostal()
+    if GetResourceState("ModernHUD") == "started" then
+        return exports["ModernHUD"]:getPostal()
+    elseif GetResourceState("nearest-postal") == "started" then
+        return exports["nearest-postal"]:getPostal()
+    end
+end
+
 -- handle player death based on death state.
 local function setDead(ped, dict, clip, newDeathState)
     if deathState == newDeathState then return end
@@ -177,6 +185,26 @@ local function setDead(ped, dict, clip, newDeathState)
         SetEntityHealth(ped, GetEntityMaxHealth(ped))
         SetTimeout(500, function()
             bleeding = 1.0
+        end)
+        SetTimeout(10000, function()
+            if deathState ~= "knocked" then return end
+            SendNUIMessage({ type = "knocked_down", signal = true })
+            CreateThread(function()
+                while deathState == "knocked" do
+                    if IsControlJustPressed(0, 47) then
+                        SendNUIMessage({ type = "send_signal" })
+
+                        local coords = GetEntityCoords(cache.ped)
+                        local zoneName = GetLabelText(GetNameOfZone(coords.x, coords.y, coords.z))
+                        local street = GetStreetNameFromHashKey(GetStreetNameAtCoord(coords.x, coords.y, coords.z))
+                        local postal = getPlayerPostal()
+                        local location = postal and ("%s %s (%s)"):format(street, zoneName, postal) or ("%s %s"):format(street, zoneName)
+                        TriggerServerEvent("ND_Ambulance:sendSignal", location, coords)
+                        break
+                    end
+                    Wait(0)
+                end
+            end)
         end)
     end
 

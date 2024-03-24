@@ -30,6 +30,23 @@ local function allowCheck(src, targetPlayerSrc)
     return true
 end
 
+RegisterNetEvent("ND_Ambulance:sendSignal", function(location, coords)
+    local src = source
+    print("Distress signal sent by", src, GetPlayerName(src))
+
+    if not location or not coords or type(location) ~= "string" or type(coords) ~= "vector3" then
+        return
+    end
+
+    if GetResourceState("ND_MDT") ~= "started" then return end
+
+    exports["ND_MDT"]:createDispatch({
+        callDescription = "Distress signal EMS needed!",
+        location = location,
+        coords = coords
+    })
+end)
+
 RegisterNetEvent("ND_Ambulance:respawnPlayer", function()
     local src = source
     local state = Player(src).state
