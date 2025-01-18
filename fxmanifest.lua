@@ -2,7 +2,7 @@
 
 author "Andyyy#7666"
 description "Ambulance job for ND Core"
-version "1.0.0"
+version "2.3.0"
 
 fx_version "cerulean"
 game "gta5"
