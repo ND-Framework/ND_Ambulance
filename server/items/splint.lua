@@ -1,8 +1,8 @@
 local function check(injuries)
     for bone, limb in pairs(injuries) do
         if limb.fracture and limb.severity > 0 then
-            limb.fracture = nil
             limb.severity -= limb.fracture
+            limb.fracture = nil
             return limb.label
         end
     end
