@@ -82,6 +82,8 @@ RegisterNetEvent("ND_Ambulance:treatSelf", function()
         player.deductMoney("cash", price, "Hospital bill")
     end
 
+    TriggerClientEvent("ND_Ambulance:respawnHospital", src)
+    Wait(1000)
     player.revive()
     player.notify({
         title = "Succesfully healed!",
