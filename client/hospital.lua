@@ -14,6 +14,7 @@ local function treatPatient(data)
             })
         end 
         TriggerServerEvent("ND_Ambulance:treatPatient", carry)
+        carryNearbyPlayer()
     elseif state.movingStretcher then
         local stretcher = GetNearestStretcher(data.coords)
         if not stretcher or not DoesEntityExist(stretcher) then
