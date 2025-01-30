@@ -70,7 +70,10 @@ RegisterNetEvent("ND_Ambulance:treatSelf", function()
 
     local price = data_death.prices.selfHeal
     if player.bank < price and player.cash < price then
-        return player.notify("Not enough money")
+        return player.notify({
+            title = "Not enough money",
+            type = "error"
+        })
     end
 
     if player.bank >= price then
@@ -80,7 +83,11 @@ RegisterNetEvent("ND_Ambulance:treatSelf", function()
     end
 
     player.revive()
-    player.notify("Succesfully healed!")
+    player.notify({
+        title = "Succesfully healed!",
+        type = "success"
+    })
+
 end)
 
 RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId)
@@ -101,7 +108,10 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
 
     local state = Entity(entity).state
     state:set("ambulanceStretcherPlayer", false, true)
-    player.notify("Succesfully treated patient!")
+    player.notify({
+        title = "Succesfully treated patient!",
+        type = "success"
+    })
 
     local price = data_death.prices.selfHeal
     if targetPlayer.bank >= price then
@@ -114,7 +124,10 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
     Wait(700)
 
     targetPlayer.revive()
-    targetPlayer.notify("Succesfully healed!")
+    targetPlayer.notify({
+        title = "Succesfully healed!",
+        type = "success"
+    })
 end)
 
 RegisterNetEvent("ND_Ambulance:startCpr", function(targetPlayerSrc)
