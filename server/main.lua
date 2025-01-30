@@ -95,13 +95,19 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
     local targetPed = GetPlayerPed(targetSrc)
     local targetCoords = GetEntityCoords(targetPed)
     local targetPlayer = NDCore.getPlayer(targetSrc)
-    local entity = getEntityFromNetId(stretcherNetId)
 
-    if not player or not targetPlayer or not isNearHospitalPed(coords) or not isNearHospitalPed(targetCoords) or not DoesEntityExist(entity) then return end
+    if stretcherNetId then
+        local entity = getEntityFromNetId(stretcherNetId)
+        if not DoesEntityExist(entity) then return end
+        local state = Entity(entity).state
+        state:set("ambulanceStretcherPlayer", false, true)
+    end
 
-    local state = Entity(entity).state
-    state:set("ambulanceStretcherPlayer", false, true)
-    player.notify("Succesfully treated patient!")
+    if not player or not targetPlayer or not isNearHospitalPed(coords) or not isNearHospitalPed(targetCoords) then return end
+    player.notify({
+        title = "Succesfully treated patient!",
+        type = "success"
+    })
 
     local price = data_death.prices.selfHeal
     if targetPlayer.bank >= price then
@@ -114,7 +120,10 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
     Wait(700)
 
     targetPlayer.revive()
-    targetPlayer.notify("Succesfully healed!")
+    targetPlayer.notify({
+        title = "Succesfully healed!",
+        type = "success"
+    })
 end)
 
 RegisterNetEvent("ND_Ambulance:startCpr", function(targetPlayerSrc)
