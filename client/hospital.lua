@@ -7,24 +7,36 @@ local function treatPatient(data)
 
     if carry and type(carry) == "number" then
         local targetState = Player(carry).state
-        if not state.isDead then
-            return NDCore.notify("This person is not severly injured!")
+        if not targetState.isDead then
+            return NDCore.notify({
+                title = "This person is not severly injured!",
+                type = "error"
+            })
         end 
         TriggerServerEvent("ND_Ambulance:treatPatient", carry)
     elseif state.movingStretcher then
         local stretcher = GetNearestStretcher(data.coords)
         if not stretcher or not DoesEntityExist(stretcher) then
-            return NDCore.notify("No patient found nearby!")
+            return NDCore.notify({
+                title = "No patient found nearby!",
+                type = "error"
+            })
         end
 
         local stretcherState = Entity(stretcher).state
         if not stretcherState.ambulanceStretcherPlayer then
-            return NDCore.notify("No patient found nearby!")
+            return NDCore.notify({
+                title = "No patient found nearby!",
+                type = "error"
+            })
         end
 
         TriggerServerEvent("ND_Ambulance:treatPatient", stretcherState.ambulanceStretcherPlayer, state.movingStretcher)
     else
-        NDCore.notify("No patient found nearby!")
+        NDCore.notify({
+            title = "No patient found nearby!",
+            type = "error"
+        })
     end
 end
 
