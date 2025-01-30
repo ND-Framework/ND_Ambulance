@@ -41,7 +41,7 @@ local function startCarry(dict, anim, flag, carryingState, carriedState, carryin
     end)
 end
 
-local function carryNearbyPlayer()
+function carryNearbyPlayer()
     local playerState = Player(cache.serverId).state
     if playerState.ambulanceCarry == true then
         return
