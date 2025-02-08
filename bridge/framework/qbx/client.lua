@@ -1,7 +1,7 @@
 local bridge = {}
 local qbx_core = exports.qbx_core
 local peds = lib.load("client.modules.peds")
-require("@qbx_core/modules/playerdata.lua")
+require("@qbx_core/modules/playerdata")
 
 function bridge.getDeathModule()
     lib.load("client.modules.death")
