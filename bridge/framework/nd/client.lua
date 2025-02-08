@@ -17,7 +17,7 @@ RegisterNetEvent("ND:updateCharacter", function(character)
 end)
 
 function bridge.hasJobs(jobs)
-    return player and lib.table.contains(jobs, player.job))
+    return player and lib.table.contains(jobs, player.job)
 end
 
 function bridge.notify(data)
