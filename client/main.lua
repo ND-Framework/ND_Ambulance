@@ -435,7 +435,7 @@ function getBodyDamage()
     return bodyBonesDamage
 end
 
-function(bone, damageWeapon)
+function updateBodyDamage(bone, damageWeapon)
     local health = getPedHealthPercentage(cache.ped)
     if health > 80 then return end
 
