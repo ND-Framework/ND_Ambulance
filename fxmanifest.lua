@@ -2,7 +2,7 @@
 
 author "Andyyy"
 description "Most advanced Ambulance job in history"
-version "2.4.1"
+version "2.4.2"
 
 fx_version "cerulean"
 game "gta5"
