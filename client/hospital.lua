@@ -8,7 +8,7 @@ local function treatPatient(data)
     if carry and type(carry) == "number" then
         local targetState = Player(carry).state
         if not targetState.isDead then
-            return Bridge.notify(({
+            return Bridge.notify({
                 title = "This person is not severly injured!",
                 type = "error"
             })
