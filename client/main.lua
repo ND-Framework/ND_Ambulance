@@ -138,7 +138,7 @@ local function getInjuredBoneData(bones)
 end
 
 -- update the statebag for the body damage.
-local function updateBodyDamage()
+local function updateInjuryStatus()
     local state = Player(cache.serverId).state
     state:set("injuries", getInjuredBoneData(bodyBonesDamage), true)
 end
@@ -466,7 +466,7 @@ function updateBodyDamage(bone, damageWeapon)
 
     bleeding = GetTotalDamageType(bodyBonesDamage, "bleeding")
     hurtWalk()
-    updateBodyDamage()
+    updateInjuryStatus()
 end
 
 exports("getLastDamagingWeapon", getLastDamagingWeapon)
