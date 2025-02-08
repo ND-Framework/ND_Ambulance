@@ -8,8 +8,8 @@ local function treatPatient(data)
     if carry and type(carry) == "number" then
         local targetState = Player(carry).state
         if not targetState.isDead then
-            return Bridge.notify(({
-                title = "This person is not severly injured!",
+            return Bridge.notify({
+                title = "This person is not severely injured!",
                 type = "error"
             })
         end 
@@ -18,7 +18,7 @@ local function treatPatient(data)
     elseif state.movingStretcher then
         local stretcher = GetNearestStretcher(data.coords)
         if not stretcher or not DoesEntityExist(stretcher) then
-            return Bridge.notify(({
+            return Bridge.notify({
                 title = "No patient found nearby!",
                 type = "error"
             })
@@ -26,7 +26,7 @@ local function treatPatient(data)
 
         local stretcherState = Entity(stretcher).state
         if not stretcherState.ambulanceStretcherPlayer then
-            return Bridge.notify(({
+            return Bridge.notify({
                 title = "No patient found nearby!",
                 type = "error"
             })
@@ -34,7 +34,7 @@ local function treatPatient(data)
 
         TriggerServerEvent("ND_Ambulance:treatPatient", stretcherState.ambulanceStretcherPlayer, state.movingStretcher)
     else
-        Bridge.notify(({
+        return Bridge.notify({
             title = "No patient found nearby!",
             type = "error"
         })
