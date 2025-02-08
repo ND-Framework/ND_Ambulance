@@ -14,6 +14,7 @@ function bridge.notify(src, data)
 end
 
 function bridge.hasMoney(src, amount)
+    local player = Ox.GetPlayer(src)
     local account = player.getAccount()
     return account.balance >= amount
 end
