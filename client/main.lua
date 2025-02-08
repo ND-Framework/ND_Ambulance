@@ -290,10 +290,10 @@ local function setDeathState(newState)
     setDead(ped, dict, clip, newState)
 end
 
-local function updatePreviousPlayerDeath(player)
+local function updatePreviousPlayerDeath()
     SetPlayerHealthRechargeMultiplier(cache.playerId, 0.0)
 
-    if not player or not player.metadata.dead then return end
+    if not Bridge.isDead() then return end
     revivePlayer()
     setDeathState("knocked")
 end
@@ -352,8 +352,7 @@ end)
 AddEventHandler("onResourceStart", function(resourceName)
     if cache.resource ~= resourceName then return end
     Wait(1000)
-    local player = NDCore.getPlayer()
-    updatePreviousPlayerDeath(player)
+    updatePreviousPlayerDeath()
 end)
 
 RegisterNetEvent("ND:revivePlayer", function()
@@ -405,23 +404,23 @@ CreateThread(function()
         if bleed > 0 and (GetEntityHealth(cache.ped)-100) > bleed and not deathState then
             ApplyDamageToPed(cache.ped, bleed)
             notifyInfo.title = "You're bleeding!"
-            NDCore.notify(notifyInfo)
+            Bridge.notify(notifyInfo)
         elseif bleed > 0 and not deathState then
             bleedOutTimer = GetCloudTimeAsInt()
             setDeathState("knocked")
             notifyInfo.title = "You need help!"
-            NDCore.notify(notifyInfo)
+            Bridge.notify(notifyInfo)
         elseif bleed > 0 and deathState == "down" and bleedOutTimer and bleedOutTimer-GetCloudTimeAsInt() > 120 then
             setDeathState("eliminated")
             notifyInfo.title = "You bled out!"
-            NDCore.notify(notifyInfo)
+            Bridge.notify(notifyInfo)
         end
 
         ::skip::
     end
 end)
 
-exports("getLastDamagingWeapon", function(ped)
+function getLastDamagingWeapon(ped)
     for i=0, 2 do
         for weapon, info in pairs(data_weapons) do
             if HasPedBeenDamagedByWeapon(ped, weapon, i) then
@@ -430,13 +429,13 @@ exports("getLastDamagingWeapon", function(ped)
             end
         end
     end
-end)
+end
 
-exports("getBodyDamage", function()
+function getBodyDamage()
     return bodyBonesDamage
-end)
+end
 
-exports("updateBodyDamage", function(bone, damageWeapon)
+function(bone, damageWeapon)
     local health = getPedHealthPercentage(cache.ped)
     if health > 80 then return end
 
@@ -468,7 +467,13 @@ exports("updateBodyDamage", function(bone, damageWeapon)
     bleeding = GetTotalDamageType(bodyBonesDamage, "bleeding")
     hurtWalk()
     updateBodyDamage()
-end)
+end
+
+exports("getLastDamagingWeapon", getLastDamagingWeapon)
+
+exports("getBodyDamage", getBodyDamage)
+
+exports("updateBodyDamage", updateBodyDamage)
 
 local respawnKeybind = lib.addKeybind({
     name = "respawn",
@@ -524,3 +529,7 @@ AddStateBagChangeHandler("injuries", nil, function(bagName, key, value, reserved
     bleeding = GetTotalDamageType(bodyBonesDamage, "bleeding")
     hurtWalk()
 end)
+
+if Bridge.getDeathModule then
+    Bridge.getDeathModule() -- for frameworks that don't have compatible death system.
+end

@@ -1,8 +1,8 @@
 -- For support join my discord: https://discord.gg/Z9Mxu72zZ6
 
-author "Andyyy#7666"
-description "Ambulance job for ND Core"
-version "2.3.4"
+author "Andyyy"
+description "Most advanced Ambulance job in history"
+version "2.4.0"
 
 fx_version "cerulean"
 game "gta5"
@@ -10,14 +10,15 @@ lua54 "yes"
 
 dependencies {
     "ox_lib",
-    "ox_target",
-    "ND_Core"
+    "ox_target"
 }
 
 files {
     "stream/*.ytyp",
     "data/**",
-    "ui/**"
+    "ui/**",
+    "client/modules/**",
+    "bridge/framework/**/client.lua"
 }
 
 data_file "DLC_ITYP_REQUEST" "stream/*.ytyp"
@@ -25,7 +26,7 @@ ui_page "ui/index.html"
 
 shared_scripts {
     "@ox_lib/init.lua",
-    "@ND_Core/init.lua"
+    "shared/bridge.lua"
 }
 
 client_scripts {

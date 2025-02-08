@@ -97,7 +97,7 @@ exports.ox_target:addGlobalPlayer({
             local state = Player(serverId).state
             local deathState = state.isDead
             if state.knockedout then
-                NDCore.notify({
+                Bridge.notify({
                     title = "Vital signs",
                     description = "Patient unconscious. Vital signs stable. Appears to have been knocked out.",
                     type = "inform",
@@ -105,7 +105,7 @@ exports.ox_target:addGlobalPlayer({
                     duration = 8000
                 })
             elseif deathState == "knocked" then
-                NDCore.notify({
+                Bridge.notify({
                     title = "Vital signs",
                     description = "Patient unconscious. Vital signs stable. Appears to have sustained significant injuries.",
                     type = "inform",
@@ -115,7 +115,7 @@ exports.ox_target:addGlobalPlayer({
             elseif deathState == "eliminated" then
                 local timeSinceDeath = state.timeSinceDeath
                 if GetCloudTimeAsInt()-timeSinceDeath < 30 then
-                    NDCore.notify({
+                    Bridge.notify({
                         title = "Vital signs",
                         description = "No pulse detected. Initiate life-saving measures & transport to medical facility recommended.",
                         type = "inform",
@@ -123,7 +123,7 @@ exports.ox_target:addGlobalPlayer({
                         duration = 8000
                     })
                 else
-                    NDCore.notify({
+                    Bridge.notify({
                         title = "Vital signs",
                         description = "No pulse detected. Patient deceased. Life-saving measures ineffective.",
                         type = "inform",
@@ -162,7 +162,7 @@ exports.ox_target:addGlobalPlayer({
             }) then return end
 
             if not lib.skillCheck("medium") then
-                return NDCore.notify({
+                return Bridge.notify({
                     title = "Defibrillator: unsuccessful",
                     description = "Defibrillator check failed.",
                     type = "error",
@@ -184,7 +184,7 @@ exports.ox_target:addGlobalPlayer({
             local performedCpr = cprValid(time, cprData, timeSinceDeath)
 
             if not performedCpr and diedAgo then
-                return NDCore.notify({
+                return Bridge.notify({
                     title = "Defibrillator: unsuccessful",
                     description = "Patient deceased, unable to be revived!",
                     type = "error",
@@ -194,7 +194,7 @@ exports.ox_target:addGlobalPlayer({
             end
 
             if math.random(1, 10) == 1 then
-                return NDCore.notify({
+                return Bridge.notify({
                     id = "ND_Ambulance:cprValid",
                     title = "Defibrillator: unsuccessful",
                     description = "Defibrillator was ineffective on this patient.",
@@ -204,7 +204,7 @@ exports.ox_target:addGlobalPlayer({
                 })
             end
 
-            NDCore.notify({
+            Bridge.notify({
                 title = "Defibrillator: successful",
                 type = "success",
                 icon = "heart-circle-bolt",

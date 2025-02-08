@@ -13,8 +13,7 @@ exports("treatment", function(event, item, inventory, slot, data)
     if event == "usingItem" then
         local result, info = treatment(inventory.id)
         if not result then
-            local player = NDCore.getPlayer(inventory.id)
-            player.notify(info)
+            Bridge.notify(inventory.id, info)
         end
         return result
     end
@@ -25,8 +24,7 @@ exports("treatment", function(event, item, inventory, slot, data)
             local state = Player(inventory.id).state
             state:set("injuries", result, true)
         end
-        local player = NDCore.getPlayer(inventory.id)
-        player.notify(info)
+        Bridge.notify(inventory.id, info)
     end
 end)
 
@@ -44,8 +42,7 @@ local function tryTreatment(src, targetPlayerSrc, item)
 
     local success, info, target = useItem(src, targetPlayerSrc, item)
     if target then
-        local player = NDCore.getPlayer(target)
-        player.notify(info)
+        Bridge.notify(inventory.id, info)
     end
 
     if not success then return end

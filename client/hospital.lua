@@ -8,7 +8,7 @@ local function treatPatient(data)
     if carry and type(carry) == "number" then
         local targetState = Player(carry).state
         if not targetState.isDead then
-            return NDCore.notify({
+            return Bridge.notify(({
                 title = "This person is not severly injured!",
                 type = "error"
             })
@@ -18,7 +18,7 @@ local function treatPatient(data)
     elseif state.movingStretcher then
         local stretcher = GetNearestStretcher(data.coords)
         if not stretcher or not DoesEntityExist(stretcher) then
-            return NDCore.notify({
+            return Bridge.notify(({
                 title = "No patient found nearby!",
                 type = "error"
             })
@@ -26,7 +26,7 @@ local function treatPatient(data)
 
         local stretcherState = Entity(stretcher).state
         if not stretcherState.ambulanceStretcherPlayer then
-            return NDCore.notify({
+            return Bridge.notify(({
                 title = "No patient found nearby!",
                 type = "error"
             })
@@ -34,7 +34,7 @@ local function treatPatient(data)
 
         TriggerServerEvent("ND_Ambulance:treatPatient", stretcherState.ambulanceStretcherPlayer, state.movingStretcher)
     else
-        NDCore.notify({
+        Bridge.notify(({
             title = "No patient found nearby!",
             type = "error"
         })
@@ -66,7 +66,7 @@ RegisterNetEvent("ND_Ambulance:respawnHospital", function()
 end)
 
 for i=1, #data_death.hospitalPeds do
-    NDCore.createAiPed({
+    Bridge.createAiPed({
         model = `s_m_m_doctor_01`,
         coords = data_death.hospitalPeds[i],
         blip = {

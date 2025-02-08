@@ -2,7 +2,6 @@ local damageStrings = {"Fractures: %s", "Burns: %s", "Bleeding: %s", "Suffocatio
 local damageTypes = {"fracture", "burn", "bleeding", "suffocating"}
 local help = {"Treatment: splint", "Treatment: burn dressing", "Treatment: gauze or tourniquet", "Treatment: cpr"}
 local injuryTreatment = {"fracture", "burn", "bleeding", "suffocating"}
-local player = NDCore.getPlayer()
 local jobs = lib.load("data.jobs")
 
 local function getDamageText(damage)
@@ -113,19 +112,6 @@ RegisterCommand("injuries", function(source, args, rawCommand)
     CheckPlayerInjuries(cache.serverId)
 end, false)
 
-RegisterNetEvent("ND:characterLoaded", function(character)
-    player = character
-end)
-
-RegisterNetEvent("ND:updateCharacter", function(character)
-    player = character
-end)
-
-AddEventHandler("onResourceStart", function(resourceName)
-    if cache.resource ~= resourceName then return end
-    player = NDCore.getPlayer()
-end)
-
 exports.ox_target:addGlobalPlayer({
     {
         name = "ND_Ambulance:checkInjuries",
@@ -135,7 +121,7 @@ exports.ox_target:addGlobalPlayer({
         canInteract = function(entity, distance, coords, name, bone)
             local targetPlayer = NetworkGetPlayerIndexFromPed(entity)
             local serverId = GetPlayerServerId(targetPlayer)
-            return Player(serverId).state.isDead or player and lib.table.contains(jobs, player.job)
+            return Player(serverId).state.isDead or Bridge.hasJobs(jobs)
         end,
         onSelect = function(data)
             local targetPlayer = NetworkGetPlayerIndexFromPed(data.entity)

@@ -53,9 +53,7 @@ RegisterNetEvent("ND_Ambulance:respawnPlayer", function()
     local time = os.time()
     if not state or time-state.timeSinceDeath < data_death.timer then return end
 
-    local player = NDCore.getPlayer(src)
-    if not player then return end
-    player.revive()
+    Bridge.revivePlayer(src)
 
     if not data_death.dropInventory then return end
     exports.ox_inventory:CreateDropFromPlayer(src)
@@ -65,31 +63,28 @@ RegisterNetEvent("ND_Ambulance:treatSelf", function()
     local src = source
     local ped = GetPlayerPed(src)
     local coords = GetEntityCoords(ped)
-    local player = NDCore.getPlayer(src)
+    local player = Bridge.getPlayer(src)
     if not player or not isNearHospitalPed(coords) then return end
 
     local price = data_death.prices.selfHeal
-    if player.bank < price and player.cash < price then
-        return player.notify({
+
+    if not Bridge.hasMoney(src, price) then
+        return Bridge.notify(src, {
             title = "Not enough money",
             type = "error"
         })
     end
 
-    if player.bank >= price then
-        player.deductMoney("bank", price, "Hospital bill")
-    elseif player.cash >= price then
-        player.deductMoney("cash", price, "Hospital bill")
-    end
+    Bridge.deductMoney(src, price)
 
     TriggerClientEvent("ND_Ambulance:respawnHospital", src)
     Wait(1000)
-    player.revive()
-    player.notify({
+
+    Bridge.revivePlayer(src)
+    Bridge.notify(src, {
         title = "Succesfully healed!",
         type = "success"
     })
-
 end)
 
 RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId)
@@ -99,11 +94,11 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
     
     local ped = GetPlayerPed(src)
     local coords = GetEntityCoords(ped)
-    local player = NDCore.getPlayer(src)
+    local player = Bridge.getPlayer(src)
 
     local targetPed = GetPlayerPed(targetSrc)
     local targetCoords = GetEntityCoords(targetPed)
-    local targetPlayer = NDCore.getPlayer(targetSrc)
+    local targetPlayer = Bridge.getPlayer(targetSrc)
 
     if stretcherNetId then
         local entity = getEntityFromNetId(stretcherNetId)
@@ -113,23 +108,21 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
     end
 
     if not player or not targetPlayer or not isNearHospitalPed(coords) or not isNearHospitalPed(targetCoords) then return end
-    player.notify({
+    
+    Bridge.notify(src, {
         title = "Succesfully treated patient!",
         type = "success"
     })
 
     local price = data_death.prices.selfHeal
-    if targetPlayer.bank >= price then
-        targetPlayer.deductMoney("bank", price, "Hospital bill")
-    elseif player.cash >= price then
-        targetPlayer.deductMoney("cash", price, "Hospital bill")
-    end
+
+    Bridge.deductMoney(targetSrc, price)
 
     TriggerClientEvent("ND_Ambulance:respawnHospital", targetSrc)
     Wait(700)
 
-    targetPlayer.revive()
-    targetPlayer.notify({
+    Bridge.revivePlayer(targetSrc)
+    Bridge.notify(targetSrc, {
         title = "Succesfully healed!",
         type = "success"
     })
@@ -229,3 +222,10 @@ end, {
         defib = true
     }
 })
+
+if Bridge.setDeadMetadata then
+    RegisterNetEvent("ND_Ambulance:playerEliminated", function(info)
+        local src = source
+        Bridge.setDeadMetadata(src, info)
+    end)    
+end

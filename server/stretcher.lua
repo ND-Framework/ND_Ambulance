@@ -203,7 +203,7 @@ exports("createStretcher", function(event, item, inventory, slot, data)
 end)
 
 RegisterCommand("stretcher", function(source, args, rawCommand)
-    local player = NDCore.getPlayer(source)
+    local player = Bridge.getPlayer(source)
     if not player or checkHasGroup(player.groups) then return end
 
     local pedCoords = GetEntityCoords(GetPlayerPed(source))
