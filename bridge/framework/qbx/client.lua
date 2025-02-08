@@ -8,7 +8,7 @@ function bridge.getDeathModule()
 end
 
 function bridge.hasJobs(jobs)
-    return lib.table.contains(jobs, QBX.PlayerData.job.name))
+    return lib.table.contains(jobs, QBX.PlayerData.job.name)
 end
 
 function bridge.notify(data)

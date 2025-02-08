@@ -41,9 +41,8 @@ end)
 local firstSpawn = true
 if GetResourceState("spawnmanager"):find("start") then
     exports.spawnmanager:setAutoSpawnCallback(function()
-        if not firstSpawn then
+        if not firstSpawn then return end
         firstSpawn = false
-
         exports.spawnmanager:spawnPlayer()
         exports.spawnmanager:setAutoSpawn(false)
     end)
