@@ -51,7 +51,7 @@ RegisterNetEvent("ND_Ambulance:respawnPlayer", function()
     local src = source
     local state = Player(src).state
     local time = os.time()
-    if not state or time-state.timeSinceDeath < data_death.timer then return end
+    if not state?.timeSinceDeath or time-state.timeSinceDeath < data_death.timer then return end
 
     Bridge.revivePlayer(src)
 
