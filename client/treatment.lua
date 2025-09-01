@@ -1,7 +1,7 @@
-local damageStrings = {"Fractures: %s", "Burns: %s", "Bleeding: %s", "Suffocation: %s"}
-local damageTypes = {"fracture", "burn", "bleeding", "suffocating"}
-local help = {"Treatment: splint", "Treatment: burn dressing", "Treatment: gauze or tourniquet", "Treatment: cpr"}
-local injuryTreatment = {"fracture", "burn", "bleeding", "suffocating"}
+local damageStrings = {("%s: %s"):format(locale("fractures")), ("%s: %s"):format(locale("burns")), ("%s: %s"):format(locale("bleeding")), ("%s: %s"):format(locale("suffocation"))}
+local damageTypes = {locale("fracture"), locale("burn"), locale("damage_bleeding"), locale("suffocating")}
+local help = {locale("treatment_splint"), locale("treatment_burn_dressing"), locale("treatment_gauze_or_tourniquet"), locale("treatment_cpr")}
+local injuryTreatment = {locale("fracture"), locale("burn"), locale("bleeding"), locale("suffocating")}
 local jobs = lib.load("data.jobs")
 
 local function getDamageText(damage)
@@ -29,6 +29,7 @@ local function getBodypartDamage(part)
     local damageTypes = {"fracture", "burn", "bleeding", "suffocating"}
     for i=1, 4 do
         local text = part and getDamageText(part[damageTypes[i]])
+        text = locale(("damage_severity_%s"):format(text))
         if text then
             values[#values+1] = damageStrings[i]:format(text)
         end
@@ -51,9 +52,9 @@ function CheckPlayerInjuries(targetSrc)
     if not info or tableLength(info) == 0 then
         lib.registerMenu({
             id = "ND_Ambulance:checkInjuries",
-            title = "Check injuries",
+            title = locale("check_injuries"),
             position = "top-right",
-            options = {{label = "No injuries"}}
+            options = {{label = locale("no_injuries")}}
         })
         return lib.showMenu("ND_Ambulance:checkInjuries")
     end
@@ -79,9 +80,9 @@ function CheckPlayerInjuries(targetSrc)
         
         if damage and injury and injury ~= "" then
             options[#options+1] = {
-                label = ("%s: %s injury"):format(label, damage),
+                label = locale("injury_label", label, damage),
                 values = getBodypartDamage(bodyPart),
-                description = ("Injury: %s"):format(injury)
+                description = locale("injury_description", injury)
             }
         end
     end
@@ -89,16 +90,16 @@ function CheckPlayerInjuries(targetSrc)
     if #options == 0 then
         lib.registerMenu({
             id = "ND_Ambulance:checkInjuries",
-            title = "Check injuries",
+            title = locale("check_injuries"),
             position = "top-right",
-            options = {{label = "No injuries"}}
+            options = {{label = locale("no_injuries")}}
         })
         return lib.showMenu("ND_Ambulance:checkInjuries")
     end
 
     lib.registerMenu({
         id = "ND_Ambulance:checkInjuries",
-        title = "Check injuries",
+        title = locale("check_injuries"),
         position = "top-right",
         options = options
     }, function(selected, scrollIndex, args)
@@ -116,7 +117,7 @@ exports.ox_target:addGlobalPlayer({
     {
         name = "ND_Ambulance:checkInjuries",
         icon = "fa-solid fa-notes-medical",
-        label = "Check injuries",
+        label = locale("check_injuries"),
         distance = 1.5,
         canInteract = function(entity, distance, coords, name, bone)
             local targetPlayer = NetworkGetPlayerIndexFromPed(entity)

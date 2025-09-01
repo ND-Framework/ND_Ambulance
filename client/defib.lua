@@ -4,7 +4,7 @@ local options = {
     {
         name = "ND_Ambulance:defib:pickup",
         icon = "fa-solid fa-briefcase",
-        label = "Pick up",
+        label = locale("pickup_defib"),
         distance = 1.5,
         onSelect = function(data)
             lib.requestAnimDict("anim@mp_snowball")
@@ -80,7 +80,7 @@ exports.ox_target:addGlobalPlayer({
     {
         name = "ND_Ambulance:checkVital",
         icon = "fa-solid fa-heart-pulse",
-        label = "Vital Signs",
+        label = locale("vital_signs"),
         distance = 1.5,
         canInteract = function(entity, distance, coords, name, bone)
             local prop = GetClosestObjectOfType(coords.x, coords.y, coords.z, 5.0, `lifepak15`, false, false, false)
@@ -98,16 +98,16 @@ exports.ox_target:addGlobalPlayer({
             local deathState = state.isDead
             if state.knockedout then
                 Bridge.notify({
-                    title = "Vital signs",
-                    description = "Patient unconscious. Vital signs stable. Appears to have been knocked out.",
+                    title = locale("vital_signs"),
+                    description = locale("patient_knockedout"),
                     type = "inform",
                     icon = "heart-pulse",
                     duration = 8000
                 })
             elseif deathState == "knocked" then
                 Bridge.notify({
-                    title = "Vital signs",
-                    description = "Patient unconscious. Vital signs stable. Appears to have sustained significant injuries.",
+                    title = locale("vital_signs"),
+                    description = locale("patient_knocked"),
                     type = "inform",
                     icon = "heart-pulse",
                     duration = 8000
@@ -116,16 +116,16 @@ exports.ox_target:addGlobalPlayer({
                 local timeSinceDeath = state.timeSinceDeath
                 if GetCloudTimeAsInt()-timeSinceDeath < 30 then
                     Bridge.notify({
-                        title = "Vital signs",
-                        description = "No pulse detected. Initiate life-saving measures & transport to medical facility recommended.",
+                        title = locale("vital_signs"),
+                        description = locale("patient_no_pulse"),
                         type = "inform",
                         icon = "heart-pulse",
                         duration = 8000
                     })
                 else
                     Bridge.notify({
-                        title = "Vital signs",
-                        description = "No pulse detected. Patient deceased. Life-saving measures ineffective.",
+                        title = locale("vital_signs"),
+                        description = locale("patient_dead"),
                         type = "inform",
                         icon = "heart-pulse",
                         duration = 8000
@@ -137,7 +137,7 @@ exports.ox_target:addGlobalPlayer({
     {
         name = "ND_Ambulance:startDefib",
         icon = "fa-solid fa-heart-circle-bolt",
-        label = "Use defibrillator",
+        label = locale("use_defib"),
         distance = 1.5,
         canInteract = function(entity, distance, coords, name, bone)
             local prop = GetClosestObjectOfType(coords.x, coords.y, coords.z, 5.0, `lifepak15`, false, false, false)
@@ -163,8 +163,8 @@ exports.ox_target:addGlobalPlayer({
 
             if not lib.skillCheck("medium") then
                 return Bridge.notify({
-                    title = "Defibrillator: unsuccessful",
-                    description = "Defibrillator check failed.",
+                    title = locale("defib_unsuccessful"),
+                    description = locale("defib_failed"),
                     type = "error",
                     icon = "heart-circle-bolt",
                     duration = 6000
@@ -185,8 +185,8 @@ exports.ox_target:addGlobalPlayer({
 
             if not performedCpr and diedAgo then
                 return Bridge.notify({
-                    title = "Defibrillator: unsuccessful",
-                    description = "Patient deceased, unable to be revived!",
+                    title = locale("defib_unsuccessful"),
+                    description = locale("defib_dead"),
                     type = "error",
                     icon = "heart-circle-bolt",
                     duration = 6000
@@ -196,8 +196,8 @@ exports.ox_target:addGlobalPlayer({
             if math.random(1, 10) == 1 then
                 return Bridge.notify({
                     id = "ND_Ambulance:cprValid",
-                    title = "Defibrillator: unsuccessful",
-                    description = "Defibrillator was ineffective on this patient.",
+                    title = locale("defib_unsuccessful"),
+                    description = locale("defib_ineffective"),
                     type = "error",
                     icon = "heart-circle-bolt",
                     duration = 6000
@@ -205,7 +205,7 @@ exports.ox_target:addGlobalPlayer({
             end
 
             Bridge.notify({
-                title = "Defibrillator: successful",
+                title = locale("defib_successful"),
                 type = "success",
                 icon = "heart-circle-bolt",
                 duration = 6000

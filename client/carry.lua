@@ -106,7 +106,7 @@ exports.ox_target:addGlobalPlayer({
     {
         name = "ND_Ambulance:carryNearby",
         icon = "fa-solid fa-hand-holding",
-        label = "Carry",
+        label = locale("carry"),
         distance = 1.5,
         canInteract = function(entity, distance, coords, name, bone)
             local player = NetworkGetPlayerIndexFromPed(entity)
@@ -120,7 +120,7 @@ exports.ox_target:addGlobalPlayer({
     {
         name = "ND_Ambulance:searchPlayer",
         icon = "fa-solid fa-magnifying-glass",
-        label = "Loot",
+        label = locale("loot"),
         distance = 1.5,
         canInteract = function(entity)
             local player = NetworkGetPlayerIndexFromPed(entity)

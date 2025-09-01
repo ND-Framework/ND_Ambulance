@@ -41,7 +41,7 @@ RegisterNetEvent("ND_Ambulance:sendSignal", function(location, coords)
     if GetResourceState("ND_MDT") ~= "started" then return end
 
     exports["ND_MDT"]:createDispatch({
-        callDescription = "Distress signal EMS needed!",
+        callDescription = locale("ems_dispatch_call"),
         location = location,
         coords = coords
     })
@@ -70,7 +70,7 @@ RegisterNetEvent("ND_Ambulance:treatSelf", function()
 
     if not Bridge.hasMoney(src, price) then
         return Bridge.notify(src, {
-            title = "Not enough money",
+            title = locale("ems_not_enough_money"),
             type = "error"
         })
     end
@@ -82,7 +82,7 @@ RegisterNetEvent("ND_Ambulance:treatSelf", function()
 
     Bridge.revivePlayer(src)
     Bridge.notify(src, {
-        title = "Succesfully healed!",
+        title = locale("ems_healed_success"),
         type = "success"
     })
 end)
@@ -110,7 +110,7 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
     if not player or not targetPlayer or not isNearHospitalPed(coords) or not isNearHospitalPed(targetCoords) then return end
     
     Bridge.notify(src, {
-        title = "Succesfully treated patient!",
+        title = locale("ems_treated_success"),
         type = "success"
     })
 
@@ -123,7 +123,7 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
 
     Bridge.revivePlayer(targetSrc)
     Bridge.notify(targetSrc, {
-        title = "Succesfully healed!",
+        title = locale("ems_healed_success"),
         type = "success"
     })
 end)

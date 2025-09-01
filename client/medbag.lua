@@ -4,7 +4,7 @@ local bagOptions = {
     {
         name = "ND_Ambulance:medbag:pickup",
         icon = "fa-solid fa-briefcase",
-        label = "Pick up",
+        label = locale("pickup_medbag"),
         distance = 1.5,
         onSelect = function(data)
             if not Entity(data.entity).state.stashId then return end
@@ -19,7 +19,7 @@ local bagOptions = {
     {
         name = "ND_Ambulance:medbag:open",
         icon = "fa-solid fa-notes-medical",
-        label = "Open",
+        label = locale("open_medbag"),
         distance = 1.5,
         onSelect = function(data)
             local state = Entity(data.entity).state

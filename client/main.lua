@@ -477,7 +477,7 @@ exports("updateBodyDamage", updateBodyDamage)
 
 local respawnKeybind = lib.addKeybind({
     name = "respawn",
-    description = "Respawn when dead",
+    description = locale("respawn_when_dead"),
     defaultKey = data_death.keybind,
     onPressed = function(self)
         if not LocalPlayer.state.dead then return end

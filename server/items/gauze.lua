@@ -18,8 +18,8 @@ end
 function Treatment.gauze(target)
     if not target then
         return false, {
-            title = "Error",
-            description = "No player found.",
+            title = locale("gauze_error_title"),
+            description = locale("gauze_error_no_player"),
             type = "error"
         }
     end
@@ -28,8 +28,8 @@ function Treatment.gauze(target)
     local injuries = state.injuries
     if not injuries then
         return false, {
-            title = "Error",
-            description = "No injuries found.",
+            title = locale("gauze_error_title"),
+            description = locale("gauze_error_no_injuries"),
             type = "error"
         }
     end
@@ -37,15 +37,15 @@ function Treatment.gauze(target)
     local limbName = check(injuries)
     if not limbName then
         return false, {
-            title = "Error",
-            description = "No wounds found.",
+            title = locale("gauze_error_title"),
+            description = locale("gauze_error_no_wounds"),
             type = "error"
         }
     end
 
     return injuries, {
-        title = "Success",
-        description = ("Used gauze on wounds on %s."):format(limbName),
+        title = locale("gauze_success_title"),
+        description = locale("gauze_success_used", limbName),
         type = "success"
     }
 end

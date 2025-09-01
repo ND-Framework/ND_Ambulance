@@ -20,8 +20,8 @@ function Treatment.burndressing(target)
     local injuries = state.injuries
     if not injuries then
         return false, {
-            title = "Error",
-            description = "No injuries found.",
+            title = locale("burndressing_error_title"),
+            description = locale("burndressing_error_no_injuries"),
             type = "error"
         }
     end
@@ -29,15 +29,15 @@ function Treatment.burndressing(target)
     local limbName = check(injuries)
     if not limbName then
         return false, {
-            title = "Error",
-            description = "No injuries found that can use a burn dressing.",
+            title = locale("burndressing_error_title"),
+            description = locale("burndressing_error_no_burnable"),
             type = "error"
         }
     end
 
     return injuries, {
-        title = "Success",
-        description = ("Used burn dressing on %s."):format(limbName),
+        title = locale("burndressing_success_title"),
+        description = locale("burndressing_success_used", limbName),
         type = "success"
     }
 end

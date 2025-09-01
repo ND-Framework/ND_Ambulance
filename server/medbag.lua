@@ -92,7 +92,7 @@ local function usingBag(inventory, slot, netId)
     local stashId = metadata and metadata.stashId
     if not bagInventories[stashId] then
         stashId = exports.ox_inventory:CreateTemporaryStash({
-            label = "Trauma bag",
+            label = locale("medbag_stash_label"),
             slots = 10,
             maxWeight = 7000,
             items = medBagItems

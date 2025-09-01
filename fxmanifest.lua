@@ -14,6 +14,7 @@ dependencies {
 }
 
 files {
+    "locales/*.json",
     "stream/*.ytyp",
     "data/**",
     "ui/**",

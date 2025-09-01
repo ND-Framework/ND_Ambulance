@@ -13,8 +13,8 @@ function Treatment.splint(target)
     local injuries = state.injuries
     if not injuries then
         return false, {
-            title = "Error",
-            description = "No injuries found.",
+            title = locale("splint_error_title"),
+            description = locale("splint_error_no_injuries"),
             type = "error"
         }
     end
@@ -22,15 +22,15 @@ function Treatment.splint(target)
     local limbName = check(injuries)
     if not limbName then
         return false, {
-            title = "Error",
-            description = "No injuries found that can use a splint.",
+            title = locale("splint_error_title"),
+            description = locale("splint_error_no_fracture"),
             type = "error"
         }
     end
 
     return injuries, {
-        title = "Success",
-        description = ("Used splint on %s."):format(limbName),
+        title = locale("splint_success_title"),
+        description = locale("splint_success_used", limbName),
         type = "success"
     }
 end

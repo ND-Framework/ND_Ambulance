@@ -159,7 +159,7 @@ ox_target:addGlobalPlayer({
     {
         name = "ND_Ambulance:pickupStretcher",
         icon = "fa-solid fa-download",
-        label = "Place on stretcher",
+        label = locale("amb_place_on_stretcher"),
         distance = 1.5,
         canInteract = function(entity, distance, coords, name, bone)
             return isTargetDead(entity) and getClosestStretcher(coords)
@@ -175,7 +175,7 @@ ox_target:addModel(getTargetStretcherModels(), {
     {
         name = "ND_Ambulance:pickupStretcher",
         icon = "fa-solid fa-hand",
-        label = "Move stretcher",
+        label = locale("amb_move_stretcher"),
         distance = 3.0,
         canInteract = function(entity)
             return isModelRaised(entity)
@@ -191,7 +191,7 @@ ox_target:addModel(getTargetStretcherModels(), {
     {
         name = "ND_Ambulance:raisedStretcher",
         icon = "fa-solid fa-arrow-up",
-        label = "Raise stretcher",
+        label = locale("amb_raise_stretcher"),
         distance = 3.0,
         canInteract = function(entity)
             return not isModelRaised(entity)
@@ -207,7 +207,7 @@ ox_target:addModel(getTargetStretcherModels(), {
     {
         name = "ND_Ambulance:lowerStretcher",
         icon = "fa-solid fa-arrow-down",
-        label = "Lower stretcher",
+        label = locale("amb_lower_stretcher"),
         distance = 3.0,
         canInteract = function(entity)
             return isModelRaised(entity)
@@ -223,7 +223,7 @@ ox_target:addModel(getTargetStretcherModels(), {
     {
         name = "ND_Ambulance:removeFromStretcher",
         icon = "fa-solid fa-hand",
-        label = "Remove from stretcher",
+        label = locale("amb_remove_from_stretcher"),
         distance = 3.0,
         canInteract = function(entity)
             local state = Entity(entity).state
@@ -240,7 +240,7 @@ ox_target:addModel(getTargetAmbulanceModels(), {
     {
         name = "ND_Ambulance:attachStretcher",
         icon = "fa-solid fa-truck-medical",
-        label = "Attach stretcher",
+        label = locale("amb_attach_stretcher"),
         distance = 3.0,
         canInteract = function(entity, distance, coords, name, bone)
             return canInteractWithAmulance(entity, coords) and not Entity(entity).state.hasStretcher and Player(cache.serverId).state.movingStretcher
@@ -253,7 +253,7 @@ ox_target:addModel(getTargetAmbulanceModels(), {
     {
         name = "ND_Ambulance:detachStretcher",
         icon = "fa-solid fa-truck-medical",
-        label = "Detach stretcher",
+        label = locale("amb_detach_stretcher"),
         distance = 3.0,
         canInteract = function(entity, distance, coords, name, bone)
             return canInteractWithAmulance(entity, coords) and Entity(entity).state.hasStretcher and not Player(cache.serverId).state.movingStretcher
