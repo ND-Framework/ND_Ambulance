@@ -25,7 +25,7 @@ function bridge.deductMoney(src, amount)
 
     account.removeBalance({
         amount = account,
-        message = "Hospital bill",
+        message = locale("hospital_bill"),
         overdraw = true
     })
 end

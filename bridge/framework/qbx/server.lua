@@ -27,9 +27,9 @@ function bridge.deductMoney(src, amount)
     local cash = qbx_core:GetMoney(src, "cash")
 
     if bank >= amount then
-        qbx_core:RemoveMoney(src, "bank", amount, "Hospital bill")
+        qbx_core:RemoveMoney(src, "bank", amount, locale("hospital_bill"))
     elseif cash >= amount then
-        qbx_core:RemoveMoney(src, "cash", amount, "Hospital bill")
+        qbx_core:RemoveMoney(src, "cash", amount, locale("hospital_bill"))
     end
 end
 

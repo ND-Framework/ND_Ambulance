@@ -35,9 +35,9 @@ function bridge.deductMoney(src, amount)
     local cash = xPlayer.getAccount("money").money
 
     if bank >= amount then
-        xPlayer.removeAccountMoney("bank", amount, "Hospital bill")
+        xPlayer.removeAccountMoney("bank", amount, locale("hospital_bill"))
     elseif cash >= amount then
-        xPlayer.removeAccountMoney("money", amount, "Hospital bill")
+        xPlayer.removeAccountMoney("money", amount, locale("hospital_bill"))
     end
 end
 

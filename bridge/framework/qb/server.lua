@@ -37,9 +37,9 @@ function bridge.deductMoney(src, amount)
     local cash = player.Functions.GetMoney(src, "cash")
 
     if bank >= amount then
-        player.Functions.RemoveMoney("bank", amount, "Hospital bill")
+        player.Functions.RemoveMoney("bank", amount, locale("hospital_bill"))
     elseif cash >= amount then
-        player.Functions.RemoveMoney("cash", amount, "Hospital bill")
+        player.Functions.RemoveMoney("cash", amount, locale("hospital_bill"))
     end
 end
 

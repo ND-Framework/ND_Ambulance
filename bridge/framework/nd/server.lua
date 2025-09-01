@@ -25,9 +25,9 @@ function bridge.deductMoney(src, amount)
     if not player then return end
 
     if player.bank >= amount then
-        player.deductMoney("bank", amount, "Hospital bill")
+        player.deductMoney("bank", amount, locale("hospital_bill"))
     elseif player.cash >= amount then
-        player.deductMoney("cash", amount, "Hospital bill")
+        player.deductMoney("cash", amount, locale("hospital_bill"))
     end
 end
 
