@@ -127,7 +127,7 @@ AddEventHandler("onResourceStop", function(name)
     end
 end)
 
-RegisterCommand("getclothing-drugs", function(source, args, rawCommand)
+RegisterCommand("getclothing-ambulance", function(source, args, rawCommand)
     local info = ""
     for k, v in pairs(clothingComponents) do
         info = ("%s\n%s = { drawable = %s, texture = %s },"):format(info, k, GetPedDrawableVariation(cache.ped, v), GetPedTextureVariation(cache.ped, v))
