@@ -1,4 +1,4 @@
-local damageStrings = {("%s: %s"):format(locale("fractures")), ("%s: %s"):format(locale("burns")), ("%s: %s"):format(locale("bleeding")), ("%s: %s"):format(locale("suffocation"))}
+local damageStrings = {locale("fractures"), locale("burns"), locale("bleeding"), locale("suffocation")}
 local damageTypes = {locale("fracture"), locale("burn"), locale("damage_bleeding"), locale("suffocating")}
 local help = {locale("treatment_splint"), locale("treatment_burn_dressing"), locale("treatment_gauze_or_tourniquet"), locale("treatment_cpr")}
 local injuryTreatment = {locale("fracture"), locale("burn"), locale("bleeding"), locale("suffocating")}
@@ -31,7 +31,7 @@ local function getBodypartDamage(part)
         local text = part and getDamageText(part[damageTypes[i]])
         text = locale(("damage_severity_%s"):format(text))
         if text then
-            values[#values+1] = damageStrings[i]:format(text)
+            values[#values+1] = ("%s: %s"):format(damageStrings[i], text)
         end
     end
     return values
