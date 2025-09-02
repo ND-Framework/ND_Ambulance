@@ -480,7 +480,7 @@ local respawnKeybind = lib.addKeybind({
     description = locale("respawn_when_dead"),
     defaultKey = data_death.keybind,
     onPressed = function(self)
-        if not LocalPlayer.state.dead then return end
+        if not LocalPlayer.state.dead or deathState ~= "eliminated" then return end
 
         local state = Player(cache.serverId).state
         if not state or GetCloudTimeAsInt()-(state.timeSinceDeath or 0) < data_death.timer then return end
