@@ -1,7 +1,7 @@
 local damageStrings = {locale("fractures"), locale("burns"), locale("bleeding"), locale("suffocation")}
-local damageTypes = {locale("fracture"), locale("burn"), locale("damage_bleeding"), locale("suffocating")}
 local help = {locale("treatment_splint"), locale("treatment_burn_dressing"), locale("treatment_gauze_or_tourniquet"), locale("treatment_cpr")}
-local injuryTreatment = {locale("fracture"), locale("burn"), locale("bleeding"), locale("suffocating")}
+local damageTypes = {"fracture", "burn", "bleeding", "suffocating"}
+local injuryTreatment = {"fracture", "burn", "bleeding", "suffocating"}
 local jobs = lib.load("data.jobs")
 
 local function getDamageText(damage)
@@ -26,7 +26,6 @@ end
 
 local function getBodypartDamage(part)
     local values = {}
-    local damageTypes = {"fracture", "burn", "bleeding", "suffocating"}
     for i=1, 4 do
         local text = part and getDamageText(part[damageTypes[i]])
         if text then
