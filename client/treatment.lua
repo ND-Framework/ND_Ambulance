@@ -7,11 +7,11 @@ local jobs = lib.load("data.jobs")
 local function getDamageText(damage)
     if not damage then return end
     if damage > 0 and damage < 1 then
-        return "minor"
+        return locale("damage_severity_minor")
     elseif damage >= 1 and damage <= 3 then
-        return "major"
+        return locale("damage_severity_major")
     elseif damage > 3 then
-        return "extreme"
+        return locale("damage_severity_extreme")
     end
 end
 
@@ -29,7 +29,6 @@ local function getBodypartDamage(part)
     local damageTypes = {"fracture", "burn", "bleeding", "suffocating"}
     for i=1, 4 do
         local text = part and getDamageText(part[damageTypes[i]])
-        text = locale(("damage_severity_%s"):format(text))
         if text then
             values[#values+1] = ("%s: %s"):format(damageStrings[i], text)
         end
