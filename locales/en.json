@@ -118,5 +118,6 @@
     "weapon_injury_high_fall": "High fall",
     "weapon_injury_high_impact": "High impact",
     "weapon_injury_drowning_suffocation": "Drowning suffocation",
-    "weapon_injury_exhaustion": "Exhaustion"
+    "weapon_injury_exhaustion": "Exhaustion",
+    "check_injuries_self_command": "injuries"
 }

@@ -118,5 +118,6 @@
     "weapon_injury_high_fall": "Hög fallolycka",
     "weapon_injury_high_impact": "Kraftig smäll",
     "weapon_injury_drowning_suffocation": "Drunkning",
-    "weapon_injury_exhaustion": "Utmattning"
+    "weapon_injury_exhaustion": "Utmattning",
+    "check_injuries_self_command": "skador"
 }

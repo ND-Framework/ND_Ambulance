@@ -108,7 +108,7 @@ function CheckPlayerInjuries(targetSrc)
     lib.showMenu("ND_Ambulance:checkInjuries")
 end
 
-RegisterCommand("injuries", function(source, args, rawCommand)
+RegisterCommand(locale("check_injuries_self_command"), function(source, args, rawCommand)
     CheckPlayerInjuries(cache.serverId)
 end, false)
 
