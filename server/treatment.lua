@@ -42,7 +42,7 @@ local function tryTreatment(src, targetPlayerSrc, item)
 
     local success, info, target = useItem(src, targetPlayerSrc, item)
     if target then
-        Bridge.notify(inventory.id, info)
+        Bridge.notify(target, info)
     end
 
     if not success then return end
