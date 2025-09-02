@@ -4,6 +4,7 @@
     "loot": "Loot",
     "perform_cpr": "Perform CPR",
     "pickup_defib": "Pick up",
+    "pickup_medbag": "Pick up",
     "vital_signs": "Vital Signs",
     "patient_knockedout": "Patient unconscious. Vital signs stable. Appears to have been knocked out.",
     "patient_knocked": "Patient unconscious. Vital signs stable. Appears to have sustained significant injuries.",

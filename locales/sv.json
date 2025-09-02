@@ -4,6 +4,7 @@
     "loot": "Råna",
     "perform_cpr": "Ge HLR",
     "pickup_defib": "Plocka upp",
+    "pickup_medbag": "Plocka upp",
     "vital_signs": "Livstecken",
     "patient_knockedout": "Patienten är medvetslös. Livstecknen är okej. Ser ut som att hen svimmat.",
     "patient_knocked": "Patienten är medvetslös. Livstecknen är okej. Ser ut som hen fått ordentliga smällar.",

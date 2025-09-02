@@ -204,7 +204,7 @@ end)
 
 RegisterCommand("stretcher", function(source, args, rawCommand)
     local player = Bridge.getPlayer(source)
-    if not player or checkHasGroup(player.groups) then return end
+    if not player or not checkHasGroup(player.groups) then return end
 
     local pedCoords = GetEntityCoords(GetPlayerPed(source))
     local objects = GetAllObjects()
