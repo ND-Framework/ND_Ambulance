@@ -36,8 +36,7 @@ end
 
 local function getEntityFromNetId(netId)
     local entity = NetworkGetEntityFromNetworkId(netId)
-    local time = os.time()
-    while not DoesEntityExist(entity) and os.time()-time < 5 do Wait(100) end
+    if entity == 0 or not DoesEntityExist(entity) then return end
     return entity
 end
 
@@ -52,7 +51,7 @@ end
 
 lib.callback.register("ND_Ambulance:changeStretcher", function(source, netId, lower)
     local entity = getEntityFromNetId(netId)
-    if not DoesEntityExist(entity) then return end
+    if not entity then return end
 
     local model = GetEntityModel(entity)
     local stretcher = isModelStretcher(model, lower)
@@ -80,7 +79,7 @@ end)
 RegisterNetEvent("ND_Ambulance:placePedOnStretcher", function(targetPlayer, stretcherNetId)
     local src = source
     local entity = getEntityFromNetId(stretcherNetId)
-    if not DoesEntityExist(entity) then return end
+    if not entity then return end
 
     local stretcherCoords = GetEntityCoords(entity)
     local targetPed = GetPlayerPed(targetPlayer)
@@ -94,7 +93,7 @@ end)
 RegisterNetEvent("ND_Ambulance:removePlayerFromStretcher", function(stretcherNetId)
     local src = source
     local entity = getEntityFromNetId(stretcherNetId)
-    if not DoesEntityExist(entity) then return end
+    if not entity then return end
 
     local stretcherCoords = GetEntityCoords(entity)
     local ped = GetPlayerPed(src)
@@ -108,12 +107,12 @@ end)
 RegisterNetEvent("ND_Ambulance:attachStretcher", function(ambulanceNetId)
     local src = source
     local ambulance = getEntityFromNetId(ambulanceNetId)
-    if not DoesEntityExist(ambulance) then return end
+    if not ambulance then return end
 
     local ped = GetPlayerPed(src)
     local pedCoords = GetEntityCoords(ped)
     local ambulanceCoords = GetEntityCoords(ambulance)
-    if #(pedCoords-ambulanceCoords) > 10 then return end
+    if #(pedCoords-ambulanceCoords) > 20 then return end
 
     local ambulanceState = Entity(ambulance).state
     local playerState = Player(src).state
@@ -121,7 +120,7 @@ RegisterNetEvent("ND_Ambulance:attachStretcher", function(ambulanceNetId)
     if not stretcherNetId or ambulanceState.hasStretcher then return end
     
     local entity = getEntityFromNetId(stretcherNetId)
-    if not DoesEntityExist(entity) then return end
+    if not entity then return end
 
     local model = GetEntityModel(entity)
     local stretcher = isModelStretcher(model, true)
@@ -151,7 +150,7 @@ end)
 RegisterNetEvent("ND_Ambulance:detachStretcher", function(ambulanceNetId)
     local src = source
     local ambulance = getEntityFromNetId(ambulanceNetId)
-    if not DoesEntityExist(ambulance) then return end
+    if not ambulance then return end
 
     local ped = GetPlayerPed(src)
     local pedCoords = GetEntityCoords(ped)
@@ -166,7 +165,7 @@ RegisterNetEvent("ND_Ambulance:detachStretcher", function(ambulanceNetId)
     if not stretcherNetId then return end
     
     local entity = getEntityFromNetId(stretcherNetId)
-    if not DoesEntityExist(entity) then return end
+    if not entity then return end
 
     local model = GetEntityModel(entity)
     local stretcher = isModelStretcher(model, false)
