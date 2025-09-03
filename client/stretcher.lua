@@ -150,6 +150,8 @@ end
 
 local function canInteractWithAmulance(entity, coords)
     local config = getAmbulanceModelConfig(GetEntityModel(entity))
+    if not config then return false end
+
     local offset = config.interact
     offset = GetOffsetFromEntityInWorldCoords(entity, offset.x, offset.y, offset.z)
     return #(offset-coords) < 1.0 and isDoorsOpen(entity, config.doors)
@@ -178,6 +180,8 @@ ox_target:addModel(getTargetStretcherModels(), {
         label = locale("amb_move_stretcher"),
         distance = 3.0,
         canInteract = function(entity)
+            local localPlayerState = LocalPlayer.state
+            if localPlayerState.isDead or localPlayerState.dead or localPlayerState.knockedout then return false end
             return isModelRaised(entity)
         end,
         onSelect = function(data)
@@ -194,6 +198,8 @@ ox_target:addModel(getTargetStretcherModels(), {
         label = locale("amb_raise_stretcher"),
         distance = 3.0,
         canInteract = function(entity)
+            local localPlayerState = LocalPlayer.state
+            if localPlayerState.isDead or localPlayerState.dead or localPlayerState.knockedout then return false end
             return not isModelRaised(entity)
         end,
         onSelect = function(data)
@@ -210,6 +216,8 @@ ox_target:addModel(getTargetStretcherModels(), {
         label = locale("amb_lower_stretcher"),
         distance = 3.0,
         canInteract = function(entity)
+            local localPlayerState = LocalPlayer.state
+            if localPlayerState.isDead or localPlayerState.dead or localPlayerState.knockedout then return false end
             return isModelRaised(entity)
         end,
         onSelect = function(data)
@@ -226,6 +234,8 @@ ox_target:addModel(getTargetStretcherModels(), {
         label = locale("amb_remove_from_stretcher"),
         distance = 3.0,
         canInteract = function(entity)
+            local localPlayerState = LocalPlayer.state
+            if localPlayerState.isDead or localPlayerState.dead or localPlayerState.knockedout then return false end
             local state = Entity(entity).state
             return state.ambulanceStretcherPlayer
         end,
@@ -243,6 +253,8 @@ ox_target:addModel(getTargetAmbulanceModels(), {
         label = locale("amb_attach_stretcher"),
         distance = 3.0,
         canInteract = function(entity, distance, coords, name, bone)
+            local localPlayerState = LocalPlayer.state
+            if localPlayerState.isDead or localPlayerState.dead or localPlayerState.knockedout then return false end
             return canInteractWithAmulance(entity, coords) and not Entity(entity).state.hasStretcher and Player(cache.serverId).state.movingStretcher
         end,
         onSelect = function(data)
@@ -256,6 +268,8 @@ ox_target:addModel(getTargetAmbulanceModels(), {
         label = locale("amb_detach_stretcher"),
         distance = 3.0,
         canInteract = function(entity, distance, coords, name, bone)
+            local localPlayerState = LocalPlayer.state
+            if localPlayerState.isDead or localPlayerState.dead or localPlayerState.knockedout then return false end
             return canInteractWithAmulance(entity, coords) and Entity(entity).state.hasStretcher and not Player(cache.serverId).state.movingStretcher
         end,
         onSelect = function(data)

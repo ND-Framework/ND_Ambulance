@@ -47,6 +47,9 @@ local function startCpr(data)
 end
 
 local function canPermformCpr(state)
+    local localPlayerState = LocalPlayer.state
+    if localPlayerState.isDead or localPlayerState.dead or localPlayerState.knockedout then return false end
+
     local cprData = state.cprData or {}
     return not cprData.ongoing and state.isDead == "eliminated"
 end

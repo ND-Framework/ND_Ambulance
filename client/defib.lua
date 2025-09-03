@@ -83,6 +83,9 @@ exports.ox_target:addGlobalPlayer({
         label = locale("vital_signs"),
         distance = 1.5,
         canInteract = function(entity, distance, coords, name, bone)
+            local localPlayerState = LocalPlayer.state
+            if localPlayerState.isDead or localPlayerState.dead or localPlayerState.knockedout then return false end
+
             local prop = GetClosestObjectOfType(coords.x, coords.y, coords.z, 5.0, `lifepak15`, false, false, false)
             if not prop or not DoesEntityExist(prop) then return end
 
@@ -140,6 +143,9 @@ exports.ox_target:addGlobalPlayer({
         label = locale("use_defib"),
         distance = 1.5,
         canInteract = function(entity, distance, coords, name, bone)
+            local localPlayerState = LocalPlayer.state
+            if localPlayerState.isDead or localPlayerState.dead or localPlayerState.knockedout then return false end
+
             local prop = GetClosestObjectOfType(coords.x, coords.y, coords.z, 5.0, `lifepak15`, false, false, false)
             if not prop or not DoesEntityExist(prop) then return end
 
