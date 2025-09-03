@@ -119,5 +119,12 @@
     "weapon_injury_high_impact": "High impact",
     "weapon_injury_drowning_suffocation": "Drowning suffocation",
     "weapon_injury_exhaustion": "Exhaustion",
-    "check_injuries_self_command": "injuries"
+    "check_injuries_self_command": "injuries",
+    "ui_knocked_out": "You've been knocked out unconsious",
+    "ui_knocked_down": "You are injured",
+    "ui_knocked_down_signal": "You are injured\nPress G to send a distress signal",
+    "ui_eliminated": "You are dead",
+    "ui_respawn_timer": "You are dead\nRespawn available in %s seconds",
+    "ui_respawn_available": "Press %s to respawn",
+    "ui_send_signal": "You are injured\nWaiting for help"
 }

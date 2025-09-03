@@ -166,7 +166,7 @@ local function setDead(ped, dict, clip, newDeathState)
 
     if newDeathState == "eliminated" then
         SetEntityHealth(ped, 100)
-        SendNUIMessage({ type = "eliminated" })
+        SendNUIMessage({ type = "eliminated", text = locale("ui_eliminated") })
         respawnTimer = data_death.timer
 
         local state = Player(cache.serverId).state
@@ -181,18 +181,18 @@ local function setDead(ped, dict, clip, newDeathState)
             end
         end)
     else
-        SendNUIMessage({ type = "knocked_down" })
+        SendNUIMessage({ type = "knocked_down", text = locale("ui_knocked_down") })
         SetEntityHealth(ped, GetEntityMaxHealth(ped))
         SetTimeout(500, function()
             bleeding = 1.0
         end)
         SetTimeout(10000, function()
             if deathState ~= "knocked" then return end
-            SendNUIMessage({ type = "knocked_down", signal = true })
+            SendNUIMessage({ type = "knocked_down", text = locale("ui_knocked_down_signal") })
             CreateThread(function()
                 while deathState == "knocked" do
                     if IsControlJustPressed(0, 47) then
-                        SendNUIMessage({ type = "send_signal" })
+                        SendNUIMessage({ type = "send_signal", text = locale("ui_send_signal") })
 
                         local coords = GetEntityCoords(cache.ped)
                         local zoneName = GetLabelText(GetNameOfZone(coords.x, coords.y, coords.z))
@@ -231,12 +231,12 @@ local function setDead(ped, dict, clip, newDeathState)
                     deadTime -= 1
                     SendNUIMessage({
                         type = "update_respawn_timer",
-                        time = deadTime
+                        text = locale("ui_respawn_timer", deadTime)
                     })
                 elseif deadTime == 0 then
                     SendNUIMessage({
                         type = "update_respawn_available",
-                        keybind = respawnKeybindLetter
+                        text = locale("ui_respawn_available", respawnKeybindLetter)
                     })
                 end
             else
@@ -301,7 +301,7 @@ end
 local function setPlayerKnockedOut()
     local state = Player(cache.serverId).state
     state:set("knockedout", true, true)
-    SendNUIMessage({ type = "knocked_out" })
+    SendNUIMessage({ type = "knocked_out", text = locale("ui_knocked_out") })
     knockedOut = true
     local timeKnocked = GetCloudTimeAsInt()
 

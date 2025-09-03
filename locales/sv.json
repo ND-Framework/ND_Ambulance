@@ -1,7 +1,7 @@
 {
     "hospital_bill": "Sjukhusräkning",
     "carry": "Bär",
-    "loot": "Råna",
+    "loot": "Sök igenom",
     "perform_cpr": "Ge HLR",
     "pickup_defib": "Plocka upp",
     "pickup_medbag": "Plocka upp",
@@ -119,5 +119,12 @@
     "weapon_injury_high_impact": "Kraftig smäll",
     "weapon_injury_drowning_suffocation": "Drunkning",
     "weapon_injury_exhaustion": "Utmattning",
-    "check_injuries_self_command": "skador"
+    "check_injuries_self_command": "skador",
+    "ui_knocked_out": "Du har blivit utslagen och är medvetslös",
+    "ui_knocked_down": "Du är skadad",
+    "ui_knocked_down_signal": "Du är skadad\nTryck på G för att skicka en nödsignal",
+    "ui_eliminated": "Du är död",
+    "ui_respawn_timer": "Du är död\nÅteruppståndelse möjlig om %s sekunder",
+    "ui_respawn_available": "Tryck på %s för att återuppstå",
+    "ui_send_signal": "Du är skadad\nVäntar på hjälp"
 }
