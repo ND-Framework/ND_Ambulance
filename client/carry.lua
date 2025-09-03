@@ -6,7 +6,7 @@ local function cancelCarry(ped, state)
 end
 
 local function isDead(state, ped)
-    return state.isDead or IsPedFatallyInjured(ped)
+    return state.isDead or state.dead or state.knockedout or IsPedFatallyInjured(ped)
 end
 
 local function startCarry(dict, anim, flag, carryingState, carriedState, carryingPed, carriedPed)
@@ -43,7 +43,7 @@ end
 
 function carryNearbyPlayer()
     local playerState = Player(cache.serverId).state
-    if playerState.ambulanceCarry == true then
+    if playerState.ambulanceCarry == true or playerState.onStretcher or playerState.handsUp or playerState.isCuffed then
         return
     elseif playerState.ambulanceCarry then
         return cancelCarry(cache.ped, playerState)
@@ -58,7 +58,7 @@ function carryNearbyPlayer()
 
     local targetPed = GetPlayerPed(targetPlayer)
     local targetState = Player(targetSrc).state
-    if isDead(playerState, cache.ped) or targetState.ambulanceCarry or not (targetState.handsUp or targetState.isCuffed or isDead(targetState, targetPed)) then return end
+    if isDead(playerState, cache.ped) or targetState.ambulanceCarry or targetState.onStretcher or not (targetState.handsUp or targetState.isCuffed or isDead(targetState, targetPed)) then return end
 
     playerState:set("ambulanceCarry", targetSrc, true)
     Wait(500)
