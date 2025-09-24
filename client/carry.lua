@@ -135,3 +135,107 @@ exports.ox_target:addGlobalPlayer({
         end
     }
 })
+
+local function findMoreSeats(entity)
+    if GetEntityType(entity) ~= 2 then return end
+    local model = GetEntityModel(entity)
+    local seats = GetVehicleModelNumberOfSeats(model)
+    if not seats or seats <= 4 then return end
+
+    for seat=4, seats do
+        local ped = GetPedInVehicleSeat(entity, seat)
+        if DoesEntityExist(ped) then
+            local player = NetworkGetPlayerIndexFromPed(ped)
+            local serverId = GetPlayerServerId(player)
+            local state = Player(serverId).state
+            return isDead(state, ped) and seat
+        end
+    end
+end
+
+local function canInteractRemoveFromVeh(entity, seat)
+    local ped = GetPedInVehicleSeat(entity, seat)
+    if not DoesEntityExist(ped) then return end
+
+    local player = NetworkGetPlayerIndexFromPed(ped)
+    local serverId = GetPlayerServerId(player)
+    local state = Player(serverId).state
+    return isDead(state, ped)
+end
+
+local function onSelectRemoveFromVeh(entity, seat)
+    local ped = GetPedInVehicleSeat(entity, seat)
+    if not DoesEntityExist(ped) then return end
+
+    local player = NetworkGetPlayerIndexFromPed(ped)
+    local serverId = GetPlayerServerId(player)
+    TriggerServerEvent("ND_Ambulance:removePedFromVehicle", serverId)
+end
+
+exports.ox_target:addGlobalVehicle({
+    {
+        name = "ND_Ambulance:vehicleTakeOut-1",
+        icon = "fa-solid fa-right-from-bracket",
+        label = locale("take_out_from_vehicle"),
+        distance = 1.5,
+        bones = {"seat_dside_f"},
+        canInteract = function(entity)
+            return canInteractRemoveFromVeh(entity, -1)
+        end,
+        onSelect = function(data)
+            onSelectRemoveFromVeh(data.entity, -1)
+        end
+    },
+    {
+        name = "ND_Ambulance:vehicleTakeOut0",
+        icon = "fa-solid fa-right-from-bracket",
+        label = locale("take_out_from_vehicle"),
+        distance = 1.5,
+        bones = {"seat_pside_f"},
+        canInteract = function(entity)
+            return canInteractRemoveFromVeh(entity, 0)
+        end,
+        onSelect = function(data)
+            onSelectRemoveFromVeh(data.entity, 0)
+        end
+    },
+    {
+        name = "ND_Ambulance:vehicleTakeOut1",
+        icon = "fa-solid fa-right-from-bracket",
+        label = locale("take_out_from_vehicle"),
+        distance = 1.5,
+        bones = {"seat_dside_r"},
+        canInteract = function(entity)
+            return canInteractRemoveFromVeh(entity, 1)
+        end,
+        onSelect = function(data)
+            onSelectRemoveFromVeh(data.entity, 1)
+        end
+    },
+    {
+        name = "ND_Ambulance:vehicleTakeOut2",
+        icon = "fa-solid fa-right-from-bracket",
+        label = locale("take_out_from_vehicle"),
+        distance = 1.5,
+        bones = {"seat_pside_r"},
+        canInteract = function(entity)
+            return canInteractRemoveFromVeh(entity, 2)
+        end,
+        onSelect = function(data)
+            onSelectRemoveFromVeh(data.entity, 2)
+        end
+    },
+    {
+        name = "ND_Ambulance:vehicleTakeOutGlobal",
+        icon = "fa-solid fa-right-from-bracket",
+        label = locale("take_out_from_vehicle"),
+        distance = 1.5,
+        canInteract = function(entity)
+            return findMoreSeats(entity)
+        end,
+        onSelect = function(data)
+            local seat = findMoreSeats(data.entity)
+            onSelectRemoveFromVeh(data.entity, seat)
+        end
+    }
+})
