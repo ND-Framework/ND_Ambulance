@@ -311,7 +311,10 @@ local function setPlayerKnockedOut()
             Wait(500)
         end
 
-        state:set("knockedout", false, true)
+        if state.knockedout then
+            state:set("knockedout", false, true)
+        end
+
         if not knockedOut then return end
         SendNUIMessage({ type = "ambulance_reset" })
         knockedOut = false
@@ -341,7 +344,7 @@ AddEventHandler("ND:playerEliminated", function(info)
     revivePlayer()
 
     -- set player as knocked out if injured with a non lethal weapon.
-    if not knockedOut and not deathState and lib.table.contains(data_knockout, info.deathCause) then
+    if not deathState and lib.table.contains(data_knockout, info.deathCause) then
         return setPlayerKnockedOut()
     end
     
@@ -380,6 +383,17 @@ end)
 RegisterNetEvent("ND:characterLoaded", function(player)
     Wait(4000)
     updatePreviousPlayerDeath(player)
+end)
+
+RegisterNetEvent("ND_Ambulance:hasExitedVehicle", function()
+    Wait(500)
+    local state = LocalPlayer.state
+    if state.isDead or state.dead or state.knockedout or IsPedFatallyInjured(cache.ped) then
+        local prevDeathState = deathState
+        deathState = nil
+        Wait(500)
+        setDeathState(prevDeathState)
+    end
 end)
 
 lib.onCache("ped", function()
