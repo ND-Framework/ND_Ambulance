@@ -123,10 +123,10 @@ exports.ox_target:addGlobalPlayer({
         label = locale("loot"),
         distance = 1.5,
         canInteract = function(entity)
-            local player = NetworkGetPlayerIndexFromPed(entity)
-            local serverId = GetPlayerServerId(player)
-            local state = Player(serverId).state
-            return state.isDead or state.knockedout
+            if LocalPlayer.state.invBusy then return end
+            local targetPlayer = GetPlayerServerId(NetworkGetPlayerIndexFromPed(entity))
+            local state = Player(targetPlayer).state
+            return state.knockedout or state.isDead or state.dead
         end,
         onSelect = function(data)
             local targetPlayer = GetPlayerServerId(NetworkGetPlayerIndexFromPed(data.entity))
