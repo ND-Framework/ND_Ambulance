@@ -403,16 +403,16 @@ CreateThread(function()
 
         if bleed > 0 and (GetEntityHealth(cache.ped)-100) > bleed and not deathState then
             ApplyDamageToPed(cache.ped, bleed)
-            notifyInfo.title = "You're bleeding!"
+            notifyInfo.title = locale("you_are_bleeding")
             Bridge.notify(notifyInfo)
         elseif bleed > 0 and not deathState then
             bleedOutTimer = GetCloudTimeAsInt()
             setDeathState("knocked")
-            notifyInfo.title = "You need help!"
+            notifyInfo.title = locale("you_need_help")
             Bridge.notify(notifyInfo)
         elseif bleed > 0 and deathState == "down" and bleedOutTimer and bleedOutTimer-GetCloudTimeAsInt() > 120 then
             setDeathState("eliminated")
-            notifyInfo.title = "You bled out!"
+            notifyInfo.title = locale("you_bled_out")
             Bridge.notify(notifyInfo)
         end
 
