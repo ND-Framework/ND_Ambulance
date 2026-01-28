@@ -20,7 +20,7 @@ function bridge.createAiPed(info)
 end
 
 function bridge.isDead()
-    return QBX.PlayerData?.metadata?.isdead
+    return QBX.PlayerData?.metadata?.isDead
 end
 
 return bridge
