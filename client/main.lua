@@ -339,7 +339,7 @@ local function getPedHealthPercentage(ped)
 end
 
 -- ND Core death system event.
-AddEventHandler("ND:playerEliminated", function(info)
+AddEventHandler("ND_Ambulance:playerEliminated", function(info)
     Wait(2000)
     revivePlayer()
 
@@ -360,6 +360,7 @@ end)
 
 RegisterNetEvent("ND:revivePlayer", function()
     if source == "" then return end
+    revivePlayer()
     deathState = nil
     bleeding = 0
     bodyBonesDamage = lib.table.deepclone(data_bone_settings)
