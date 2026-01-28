@@ -268,21 +268,29 @@ end
 -- set stateags and determine animation that should be playing.
 local function setDeathState(newState)
     if knockedOut or deathState == "eliminated" then return end
-
+    
     knockedOut = false
     local ped = PlayerPedId()
-
-    if LocalPlayer.state.dead and deathState == "knocked" then
+    
+    -- Check if player is already dead from metadata and preserve that state
+    local metadataState = Player(cache.serverId).state
+    if metadataState.isDead then
+        -- Use the exact metadata state instead of overriding it
+        newState = metadataState.isDead
+    elseif LocalPlayer.state.dead and deathState == "knocked" then
         newState = "eliminated"
     end
-
+    
     local state = Player(cache.serverId).state
-    state:set("isDead", newState, true)
+    -- Only set metadata if it doesn't already match the desired state
+    if not metadataState.isDead or metadataState.isDead ~= newState then
+        state:set("isDead", newState, true)
+    end
     state:set("injuries", getInjuredBoneData(bodyBonesDamage), true)
     LocalPlayer.state.dead = true
-
+    
     BlockActions(true)
-
+    
     downAnim = downAnim or getRandomDeathAnim()
     local anim = downAnim[cache.vehicle and "vehicle" or newState]
     local dict, clip = anim[1], anim[2]
@@ -294,8 +302,15 @@ local function updatePreviousPlayerDeath()
     SetPlayerHealthRechargeMultiplier(cache.playerId, 0.0)
 
     if not Bridge.isDead() then return end
+    
     revivePlayer()
-    setDeathState("knocked")
+    
+    -- Get the exact death state from metadata to ensure correct screen displays
+    local metadataState = Player(cache.serverId).state
+    local deathStateFromMetadata = metadataState.isDead
+    
+    -- Set the death state to match metadata exactly
+    setDeathState(deathStateFromMetadata)
 end
 
 local function setPlayerKnockedOut()
