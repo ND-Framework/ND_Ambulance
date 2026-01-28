@@ -1,7 +1,7 @@
 local bridge = {}
 local qbx_core = exports.qbx_core
 
-function bridge.setDeadMetadata(src)
+function bridge.setDeadMetadata(src, info)
     qbx_core:SetMetadata(src, "isDead", true)
 end
 
@@ -34,7 +34,7 @@ function bridge.deductMoney(src, amount)
 end
 
 function bridge.revivePlayer(src)
-    TriggerClientEvent("ND_Ambulance:revivePlayer", src)
+    TriggerClientEvent("ND:revivePlayer", src)
     qbx_core:SetMetadata(src, "isDead", false)
 end
 
@@ -49,7 +49,12 @@ lib.addCommand("revive", {
         }
     }
 }, function(src, args, raw)
-    bridge.revivePlayer(src)
+    local target = args.target
+    if target then
+        bridge.revivePlayer(target)
+    else
+        bridge.revivePlayer(src)
+    end
 end)
 
 return bridge
