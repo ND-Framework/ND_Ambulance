@@ -38,6 +38,23 @@ RegisterNetEvent("ND_Ambulance:sendSignal", function(location, coords)
         return
     end
 
+    if GetResourceState("lb-tablet") == "started" then
+        exports["lb-tablet"]:AddDispatch({
+            priority = "high",
+            code = "",
+            title = locale("ems_dispatch_call"),
+            description = "",
+            job = "ambulance",
+            time = 300,
+            location = {
+                label = location,
+                coords = { x = coords.x, y = coords.y }
+            }
+        })
+
+        return
+    end
+
     if GetResourceState("ND_MDT") ~= "started" then return end
 
     exports["ND_MDT"]:createDispatch({
