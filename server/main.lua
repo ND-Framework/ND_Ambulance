@@ -130,6 +130,8 @@ end)
 
 RegisterNetEvent("ND_Ambulance:startCpr", function(targetPlayerSrc)
     local src = source
+    targetPlayerSrc = tonumber(targetPlayerSrc)
+    if not targetPlayerSrc or not DoesPlayerExist(targetPlayerSrc) then return end
     if not allowCheck(src, targetPlayerSrc) then return end
     
     local playerState = Player(src).state
@@ -160,6 +162,8 @@ end)
 
 RegisterNetEvent("ND_Ambulance:stopCpr", function(targetPlayerSrc)
     local src = source
+    targetPlayerSrc = tonumber(targetPlayerSrc)
+    if not targetPlayerSrc or not DoesPlayerExist(targetPlayerSrc) then return end
     if not allowCheck(src, targetPlayerSrc) then return end
     
     local playerState = Player(src).state
@@ -216,6 +220,9 @@ end)
 
 RegisterNetEvent("ND_Ambulance:removePedFromVehicle", function(target)
     local src = source
+    target = tonumber(target)
+    if not target or not DoesPlayerExist(target) then return end
+
     local ped = GetPlayerPed(src)
     local targetPed = GetPlayerPed(target)
     if not DoesEntityExist(targetPed) then return end
