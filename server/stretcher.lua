@@ -192,6 +192,14 @@ RegisterNetEvent("ND_Ambulance:detachStretcher", function(ambulanceNetId)
 end)
 
 exports("createStretcher", function(event, item, inventory, slot, data)
+    if event == "usingItem" then
+        local player = inventory.id
+        local vehicle = GetVehiclePedIsIn(GetPlayerPed(player))
+        if vehicle and vehicle ~= 0 then
+            return false
+        end
+    end
+    
     if event ~= "usedItem" then return end
 
     local ped = GetPlayerPed(inventory.id)
