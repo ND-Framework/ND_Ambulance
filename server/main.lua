@@ -1,8 +1,9 @@
 local data_death = require("data.death")
+local jobs = require("data.jobs")
 
 local function isNearHospitalPed(coords)
     for i=1, #data_death.hospitalPeds do
-        local location = data_death.hospitalPeds[i]
+        local location = data_death.hospitalPeds?[i]?.coords
         if #(coords-location.xyz) < 5 then
             return true
         end
@@ -76,14 +77,25 @@ RegisterNetEvent("ND_Ambulance:respawnPlayer", function()
     exports.ox_inventory:CreateDropFromPlayer(src)
 end)
 
-RegisterNetEvent("ND_Ambulance:treatSelf", function()
+RegisterNetEvent("ND_Ambulance:treatSelf", function(pedIndex)
     local src = source
     local ped = GetPlayerPed(src)
     local coords = GetEntityCoords(ped)
     local player = Bridge.getPlayer(src)
     if not player or not isNearHospitalPed(coords) then return end
 
-    local price = data_death.prices.selfHeal
+    local hospitalPed = data_death.hospitalPeds[pedIndex or 1]
+    local disableCount = hospitalPed.disableHealingOnAmbulanceCount or 3
+    local selfHealPrice = hospitalPed.selfHeal or 500
+
+    if not Bridge.hasJobs(src, jobs) and Bridge.getAmbulanceCount(jobs) >= disableCount then
+        return Bridge.notify(src, {
+            title = locale("ems_enough_online", disableCount),
+            type = "success"
+        })
+    end
+
+    local price = selfHealPrice
 
     if not Bridge.hasMoney(src, price) then
         return Bridge.notify(src, {
@@ -104,14 +116,32 @@ RegisterNetEvent("ND_Ambulance:treatSelf", function()
     })
 end)
 
-RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId)
+local playerPedIndex = {}
+
+RegisterNetEvent("ND_Ambulance:setPedIndex", function(pedIndex)
+    local src = source
+    playerPedIndex[src] = pedIndex
+end)
+
+RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId, pedIndex)
     local src = source
     targetSrc = tonumber(targetSrc)
-    if not targetSrc then return end
+    if not targetSrc or not DoesPlayerExist(targetSrc) then return end
+
+    local player = Bridge.getPlayer(src)
+    local hospitalPed = data_death.hospitalPeds[pedIndex or 1]
+    local disableCount = hospitalPed.disableHealingOnAmbulanceCount or 3
+    local otherHealPrice = hospitalPed.otherHeal or 1000
+
+    if not Bridge.hasJobs(src, jobs) and Bridge.getAmbulanceCount(jobs) >= disableCount then
+        return Bridge.notify(src, {
+            title = locale("ems_enough_online", disableCount),
+            type = "success"
+        })
+    end
     
     local ped = GetPlayerPed(src)
     local coords = GetEntityCoords(ped)
-    local player = Bridge.getPlayer(src)
 
     local targetPed = GetPlayerPed(targetSrc)
     local targetCoords = GetEntityCoords(targetPed)
@@ -131,8 +161,7 @@ RegisterNetEvent("ND_Ambulance:treatPatient", function(targetSrc, stretcherNetId
         type = "success"
     })
 
-    local price = data_death.prices.selfHeal
-
+    local price = otherHealPrice
     Bridge.deductMoney(targetSrc, price)
 
     TriggerClientEvent("ND_Ambulance:respawnHospital", targetSrc)

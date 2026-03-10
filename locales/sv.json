@@ -1,4 +1,5 @@
 {
+    "ems_enough_online": "Det finns mer än %s sjukvardare i tjänst. Ta hjälp av de.",
     "hospital_bill": "Sjukhusräkning",
     "carry": "Bär",
     "take_out_from_vehicle": "Ta ut från fordon",

@@ -1,5 +1,8 @@
 local data_death = require("data.death")
 local data_stretchers = require("data.stretchers")
+local createdPeds = {}
+
+local lastPedIndex = nil
 
 local function treatPatient(data)
     local state = Player(cache.serverId).state
@@ -13,7 +16,7 @@ local function treatPatient(data)
                 type = "error"
             })
         end 
-        TriggerServerEvent("ND_Ambulance:treatPatient", carry)
+        TriggerServerEvent("ND_Ambulance:treatPatient", carry, nil, lastPedIndex)
         carryNearbyPlayer()
     elseif state.movingStretcher then
         local stretcher = GetNearestStretcher(data.coords)
@@ -32,7 +35,7 @@ local function treatPatient(data)
             })
         end
 
-        TriggerServerEvent("ND_Ambulance:treatPatient", stretcherState.ambulanceStretcherPlayer, state.movingStretcher)
+        TriggerServerEvent("ND_Ambulance:treatPatient", stretcherState.ambulanceStretcherPlayer, state.movingStretcher, lastPedIndex)
     else
         return Bridge.notify({
             title = locale("no_patient_nearby"),
@@ -63,13 +66,20 @@ RegisterNetEvent("ND_Ambulance:respawnHospital", function()
     Teleport(cache.ped, coords, false)
     Wait(100)
     DoScreenFadeIn(500)
+    SetTimeout(2000, function()
+        if IsScreenFadedIn() then
+            DoScreenFadeIn(500)
+        end
+    end)
 end)
 
 for i=1, #data_death.hospitalPeds do
-    Bridge.createAiPed({
+    local hospitalInfo = data_death.hospitalPeds[i]
+    local pedIndex = i
+    createdPeds[#createdPeds+1] = Bridge.createAiPed({
         model = `s_m_m_doctor_01`,
-        coords = data_death.hospitalPeds[i],
-        blip = {
+        coords = hospitalInfo.coords,
+        blip = hospitalInfo.blip and {
             sprite = 61,
             scale = 0.8,
             color = 43,
@@ -86,7 +96,7 @@ for i=1, #data_death.hospitalPeds do
                 label = locale("get_treated"),
                 distance = 2.0,
                 onSelect = function(data)
-                    TriggerServerEvent("ND_Ambulance:treatSelf")
+                    TriggerServerEvent("ND_Ambulance:treatSelf", pedIndex)
                 end
             },
             {
@@ -98,8 +108,18 @@ for i=1, #data_death.hospitalPeds do
                     local state = Player(cache.serverId).state
                     return state.movingStretcher or state.ambulanceCarry
                 end,
-                onSelect = treatPatient
+                onSelect = function(data)
+                    lastPedIndex = pedIndex
+                    treatPatient(data)
+                end
             }
         }
     })
 end
+
+AddEventHandler("onResourceStop", function(resource)
+    if cache.resource ~= resource then return end
+    for i=1, #createdPeds do
+        Bridge.removeAiPed(createdPeds[i])
+    end
+end)
