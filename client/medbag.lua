@@ -1,3 +1,5 @@
+local data_walks = require("data.walks")
+local oldMovement = nil
 local bagProp = {}
 
 local bagOptions = {
@@ -37,25 +39,21 @@ local bagOptions = {
     }
 }
 
-local function resetWalk()
-    if GetPedMovementClipset(cache.ped) ~= `clipset@move@trash_fast_turn` then return end
-    SetPedMoveRateOverride(cache.ped, 1.0)
-    ResetPedMovementClipset(cache.ped, 0)
-end
-
 local function enableBag(enable)
     local count = exports.ox_inventory:GetItemCount("medbag")
     if count > 1 and enable or count > 1 and not enable then return end
+
+    if enable then
+        oldMovement = GetPedMovementClipset(cache.ped)
+    else
+        ResetWalk(`clipset@move@trash_fast_turn`, oldMovement)
+    end
     
     local netId = lib.callback.await("ND_Ambulance:bagStatus", false, enable)
-    if not enable or not netId then return
-        resetWalk()
-    end
+    if not enable or not netId then return end
     
     local obj = NetToObj(netId)
-    if not obj or not DoesEntityExist(obj) then
-        return resetWalk()
-    end
+    if not obj or not DoesEntityExist(obj) then return end
     
     AttachEntityToEntity(obj, cache.ped, GetPedBoneIndex(cache.ped, 0xDEAD), 0.38, -0.1, -0.02, -86.87, -85.0, -18.29, true, true, false, true, 2, true)
     bagProp.entity = obj
@@ -89,7 +87,7 @@ end)
 
 AddEventHandler("onResourceStop", function(name)
     if cache.resource ~= name or exports.ox_inventory:GetItemCount("medbag") == 0 then return end
-    resetWalk()
+    ResetWalk(`clipset@move@trash_fast_turn`, oldMovement)
 end)
 
 exports("useBag", function(data)
@@ -105,7 +103,7 @@ exports("useBag", function(data)
     Wait(800)
     DetachEntity(entity)
     exports.ox_inventory:useItem(data)
-    resetWalk()
+    ResetWalk(`clipset@move@trash_fast_turn`, oldMovement)
 end)
 
 exports("bag", enableBag)

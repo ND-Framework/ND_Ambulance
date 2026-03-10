@@ -51,6 +51,20 @@ function GetTotalDamageType(body, damageType)
     return value
 end
 
+function ResetWalk(checkWalk, previousMovement)
+    local ped = cache.ped
+    if GetPedMovementClipset(ped) ~= checkWalk then return end
+
+    SetPedMoveRateOverride(ped, 1.0)
+
+    local movement = data_walks[previousMovement]
+    ResetPedMovementClipset(ped, 0)
+    
+    if movement then
+        return SetPedMovementClipset(ped, movement, true)
+    end
+end
+
 local function revivePlayer()
     local oldPed = cache.ped
     local seat = cache.seat
@@ -88,21 +102,16 @@ local function getNearestRespawnPoint()
     return nearestCoords
 end
 
-local function resetWalk()
-    local ped = cache.ped
-    if GetPedMovementClipset(ped) ~= `move_m@injured` then return end
-
-    SetPedMoveRateOverride(ped, 1.0)
-
-    local movement = data_walks[oldMovement]
-    return movement and SetPedMovementClipset(ped, movement, true) or ResetPedMovementClipset(ped, 0)
-end
-
 -- injured walking style set depending on body part injury.
 local function hurtWalk()
-    oldMovement = GetPedMovementClipset(cache.ped)
+    local movement = GetPedMovementClipset(cache.ped)
+    if movement ~= `move_m@injured` then
+        oldMovement = movement
+    end
 
-    for _, info in pairs(bodyBonesDamage) do        
+    Wait(500)
+
+    for _, info in pairs(bodyBonesDamage) do
         if info.causeLimp and info.severity > 1.0 then
             lib.requestAnimSet("move_m@injured")
             SetPedMovementClipset(cache.ped, "move_m@injured", 1)
@@ -112,7 +121,7 @@ local function hurtWalk()
         end
     end
 
-    resetWalk()
+    ResetWalk(`move_m@injured`, oldMovement)
 end
 
 -- get body damage based on body parts.

@@ -1,6 +1,7 @@
 local stretcherModels = require("data.stretchers")
 local ambulanceModels = require("data.vehicles")
 local ox_target = exports.ox_target
+local oldMovement = nil
 
 local function isObjectStretcher(hash)
     for i=1, #stretcherModels do
@@ -53,6 +54,8 @@ local function stopMovingStretcher(playerState, entity)
     if IsEntityPlayingAnim(ped, "anim@move_m@prisoner_cuffed", "idle", 3) then
         StopAnimTask(ped, "anim@move_m@prisoner_cuffed", "idle", 2.0)
     end
+
+    ResetWalk(`move_m@hurry@c`, oldMovement)
 end
 
 local function startMoveStretcher(ped, entity, playerState)
@@ -60,6 +63,8 @@ local function startMoveStretcher(ped, entity, playerState)
     exports.ox_target:disableTargeting(false) -- disable so player can put stretcher in ambulance.
     lib.requestAnimDict("anim@move_m@prisoner_cuffed")
     lib.disableControls:Add(73, 22, 21, 23, 24, 25, 257, 36)
+    
+    oldMovement = GetPedMovementClipset(ped)
 
     CreateThread(function()
         while playerState.movingStretcher do
@@ -86,6 +91,9 @@ local function startMoveStretcher(ped, entity, playerState)
         true, true, false,
         true, 1, true
     )
+
+    lib.requestAnimSet("move_m@hurry@c")
+    SetPedMovementClipset(ped, "move_m@hurry@c", 0.1)
 end
 
 local function getTargetAmbulanceModels()
