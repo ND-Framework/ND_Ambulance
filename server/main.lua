@@ -228,6 +228,25 @@ RegisterNetEvent("ND_Ambulance:removePedFromVehicle", function(target)
     TriggerClientEvent("ND_Ambulance:hasExitedVehicle", target)
 end)
 
+RegisterNetEvent("ND_Ambulance:search", function(targetSrc)
+    local src = source
+    targetSrc = tonumber(targetSrc)
+    if not targetSrc or not DoesPlayerExist(targetSrc) then return end
+
+    local targetState = Player(targetSrc).state
+    if not targetState.knockedout and not targetState.isDead and not targetState.dead then return end
+
+    local ped = GetPlayerPed(src)
+    local targetPed = GetPlayerPed(targetSrc)
+    if not targetPed or not ped then return end
+
+    local coords = GetEntityCoords(ped)
+    local targetCoords = GetEntityCoords(targetPed)
+    if #(coords-targetCoords) > 15 then return end
+
+    exports.ox_inventory:forceOpenInventory(src, "player", targetSrc)
+end)
+
 exports.ox_inventory:registerHook("swapItems", function(payload)
     if payload.toType ~= "player" or payload.fromInventory == payload.toInventory then return end
     return exports.ox_inventory:GetItemCount(payload.toInventory, "defib") == 0

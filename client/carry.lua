@@ -131,7 +131,8 @@ exports.ox_target:addGlobalPlayer({
         onSelect = function(data)
             local targetPlayer = GetPlayerServerId(NetworkGetPlayerIndexFromPed(data.entity))
             if not targetPlayer then return end
-            exports.ox_inventory:openInventory("player", targetPlayer)
+            TriggerServerEvent("ND_Ambulance:search", targetPlayer)
+            -- exports.ox_inventory:openInventory("player", targetPlayer)
         end
     }
 })
