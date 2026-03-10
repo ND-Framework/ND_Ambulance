@@ -3,6 +3,7 @@ local function cancelCarry(ped, state)
     state:set("handsUp", nil, true)
     ClearPedSecondaryTask(ped)
     DetachEntity(ped, true, false)
+    OnesyncEnableRemoteAttachmentSanitization(true)
 end
 
 local function isDead(state, ped)
@@ -10,9 +11,10 @@ local function isDead(state, ped)
 end
 
 local function startCarry(dict, anim, flag, carryingState, carriedState, carryingPed, carriedPed)
-    BlockActions(true, true, true)
-
     local carry = true
+    BlockActions(true, true, true)
+    OnesyncEnableRemoteAttachmentSanitization(false)
+
     CreateThread(function()
         while carry do
             if IsControlJustPressed(0, 73) then
@@ -34,7 +36,9 @@ local function startCarry(dict, anim, flag, carryingState, carriedState, carryin
         end
 
         BlockActions(false)
+        OnesyncEnableRemoteAttachmentSanitization(true)
         carry = false
+        
         if playerState.ambulanceCarry then
             cancelCarry(cache.ped, playerState)
         end
