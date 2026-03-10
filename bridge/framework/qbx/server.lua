@@ -1,8 +1,9 @@
 local bridge = {}
 local qbx_core = exports.qbx_core
 
-function bridge.setDeadMetadata(src)
+function bridge.setDeadMetadata(src, info)
     qbx_core:SetMetadata(src, "isDead", true)
+    qbx_core:SetMetadata(src, "deathTimeStamp", info.timestamp)
 end
 
 function bridge.getPlayer(src)
@@ -51,5 +52,16 @@ lib.addCommand("revive", {
 }, function(src, args, raw)
     bridge.revivePlayer(src)
 end)
+
+function bridge.getAmbulanceCount(jobs)
+    local count = 0
+    local players = qbx_core:GetPlayersData()
+    for _, player in pairs(players) do
+        if lib.table.contains(jobs, player.PlayerData.job.name) then
+            count += 1
+        end
+    end
+    return count
+end
 
 return bridge

@@ -2,6 +2,10 @@ local bridge = {}
 local ESX = exports["es_extended"]:getSharedObject()
 local peds = lib.load("client.modules.peds")
 
+AddEventHandler("esx:playerLoaded", function()
+    TriggerEvent("ND_Ambulance:playerLoaded")
+end)
+
 function bridge.getDeathModule()
     lib.load("client.modules.death")
 end
@@ -20,12 +24,21 @@ function bridge.notify(data)
 end
 
 function bridge.createAiPed(info)
-    peds.createAiPed(info)
+    return peds.createAiPed(info)
+end
+
+function bridge.removeAiPed(id)
+    peds.removeAiPed(id)
 end
 
 function bridge.isDead()
     local player = ESX.GetPlayerData()
     return player.metadata["isDead"]
+end
+
+function bridge.sinceDeath()
+    local player = ESX.GetPlayerData()
+    return player.metadata["sinceDeath"]
 end
 
 return bridge

@@ -35,6 +35,23 @@ function bridge.revivePlayer(src)
     Player(src).state:set("isDead", false)
 end
 
+function bridge.getAmbulanceCount(jobs)
+    local players = Ox.GetPlayers({
+        groups = jobs
+    })
+    return #players
+end
+
+function bridge.hasJobs(src, groups)
+    local player = Ox.GetPlayer(src)
+    local playerGroups = player.getGroups()
+    for i=1, #groups do
+        if playerGroups[groups[i]] then
+            return true
+        end
+    end
+end
+
 lib.addCommand("revive", {
     help = "Admin command, revive a player.",
     restricted = "group.admin",
@@ -46,7 +63,7 @@ lib.addCommand("revive", {
         }
     }
 }, function(src, args, raw)
-    bridge.revivePlayer(src)
+    bridge.revivePlayer(args.target)
 end)
 
 return bridge

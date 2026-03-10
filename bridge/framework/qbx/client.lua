@@ -3,6 +3,10 @@ local qbx_core = exports.qbx_core
 local peds = lib.load("client.modules.peds")
 require("@qbx_core/modules/playerdata")
 
+AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
+    TriggerEvent("ND_Ambulance:playerLoaded")
+end)
+
 function bridge.getDeathModule()
     lib.load("client.modules.death")
 end
@@ -16,11 +20,19 @@ function bridge.notify(data)
 end
 
 function bridge.createAiPed(info)
-    peds.createAiPed(info)
+    return peds.createAiPed(info)
+end
+
+function bridge.removeAiPed(id)
+    peds.removeAiPed(id)
 end
 
 function bridge.isDead()
     return QBX.PlayerData?.metadata?.isdead
+end
+
+function bridge.sinceDeath()
+    return QBX.PlayerData?.metadata?.deathTimeStamp
 end
 
 return bridge

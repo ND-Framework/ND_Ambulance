@@ -16,6 +16,7 @@ local knockedOut = false
 local bleeding = 0
 local bodyBonesDamage = lib.table.deepclone(data_bone_settings)
 local oldMovement = nil
+local lastDeadFound = nil
 
 function BlockActions(status, ignoreInv, ignoreTarget)
     LocalPlayer.state.blockHandsUp = status
@@ -81,6 +82,11 @@ local function revivePlayer()
 
     if veh and veh ~= 0 then
         SetPedIntoVehicle(ped, veh, seat)
+    end
+
+    OnesyncEnableRemoteAttachmentSanitization(true)
+    if GetResourceState("ND_Police") == "started" then
+        exports["ND_Police"]:toggleHandsUp(false, "hu")
     end
 end
 
@@ -299,10 +305,24 @@ local function setDeathState(newState)
     setDead(ped, dict, clip, newState)
 end
 
+local function minutesToSeconds(minutes)
+    return minutes * 60
+end
+
 local function updatePreviousPlayerDeath()
+    exports.spawnmanager:setAutoSpawn(false)
     SetPlayerHealthRechargeMultiplier(cache.playerId, 0.0)
 
     if not Bridge.isDead() then return end
+
+    local sinceDeath = Bridge.sinceDeath()
+    if sinceDeath then
+        local time = GetCloudTimeAsInt()
+        if time-sinceDeath > minutesToSeconds(data_death.spawnAsDeadTime or 15) then
+            return
+        end
+    end
+
     revivePlayer()
     setDeathState("knocked")
 end
@@ -347,6 +367,35 @@ local function getPedHealthPercentage(ped)
     return (health / (maxHealth*scalingFactor))*100
 end
 
+local function revive()
+    deathState = nil
+    lastDeadFound = nil
+    bleeding = 0
+    bodyBonesDamage = lib.table.deepclone(data_bone_settings)
+    SendNUIMessage({ type = "ambulance_reset" })
+    local state = Player(cache.serverId).state
+    state:set("isDead", false, true)
+    state:set("injuries", false, true)
+    state:set("cprData", nil, true)
+    LocalPlayer.state.dead = false
+    LocalPlayer.state.onStretcher = false
+
+    if knockedOut then
+        state:set("knockedout", false, true)
+        knockedOut = false
+    end
+
+    BlockActions(false)
+    ResetWalk(`move_m@injured`, oldMovement)
+
+    OnesyncEnableRemoteAttachmentSanitization(true)
+    if GetResourceState("ND_Police") == "started" then
+        exports["ND_Police"]:toggleHandsUp(false, "hu")
+    end
+end
+
+exports("revive", revive)
+
 -- ND Core death system event.
 AddEventHandler("ND:playerEliminated", function(info)
     Wait(2000)
@@ -369,29 +418,13 @@ end)
 
 RegisterNetEvent("ND:revivePlayer", function()
     if source == "" then return end
-    deathState = nil
-    bleeding = 0
-    bodyBonesDamage = lib.table.deepclone(data_bone_settings)
-    SendNUIMessage({ type = "ambulance_reset" })
-    local state = Player(cache.serverId).state
-    state:set("isDead", false, true)
-    state:set("injuries", false, true)
-    state:set("cprData", nil, true)
-    LocalPlayer.state.dead = false
-    LocalPlayer.state.onStretcher = false
-
-    if knockedOut then
-        state:set("knockedout", false, true)
-        knockedOut = false
-    end
-
-    BlockActions(false)
-    resetWalk()
+    revive()
 end)
 
-RegisterNetEvent("ND:characterLoaded", function(player)
+RegisterNetEvent("ND_Ambulance:playerLoaded", function(player)
     Wait(4000)
-    updatePreviousPlayerDeath(player)
+    updatePreviousPlayerDeath()
+    OnesyncEnableRemoteAttachmentSanitization(true)
 end)
 
 RegisterNetEvent("ND_Ambulance:hasExitedVehicle", function()
@@ -420,12 +453,13 @@ CreateThread(function()
 
     while true do
         Wait(3000)
+        local ped = cache.ped
+        local bleed = math.floor(bleeding/2)
+        
         if bleeding <= 0 then goto skip end
 
-        local bleed = math.floor(bleeding/2)
-
-        if bleed > 0 and (GetEntityHealth(cache.ped)-100) > bleed and not deathState then
-            ApplyDamageToPed(cache.ped, bleed)
+        if bleed > 0 and (GetEntityHealth(ped)-100) > bleed and not deathState then
+            ApplyDamageToPed(ped, bleed)
             notifyInfo.title = locale("you_are_bleeding")
             Bridge.notify(notifyInfo)
         elseif bleed > 0 and not deathState then
@@ -440,6 +474,20 @@ CreateThread(function()
         end
 
         ::skip::
+
+
+        local isPedDead = IsPedFatallyInjured(ped) or IsEntityDead(ped) or IsPlayerDead(cache.playerId)
+        if isPedDead and not deathState then
+            local time = GetCloudTimeAsInt()
+
+            if not lastDeadFound then
+                lastDeadFound = time
+            end
+
+            if time-lastDeadFound > 5 then
+                setDeathState("knocked")
+            end
+        end
     end
 end)
 

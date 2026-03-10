@@ -1,9 +1,10 @@
 local bridge = {}
 local ESX = exports["es_extended"]:getSharedObject()
 
-function bridge.setDeadMetadata(src)
+function bridge.setDeadMetadata(src, info)
     local xPlayer = ESX.GetPlayerFromId(src)
     xPlayer.setMeta("isDead", true)
+    xPlayer.setMeta("deathTimeStamp", info.timestamp)
 end
 
 function bridge.getPlayer(src)
@@ -41,6 +42,32 @@ function bridge.deductMoney(src, amount)
     end
 end
 
+function bridge.getAmbulanceCount(jobs)
+    local count = 0
+    local groupedPlayers = ESX.ExtendedPlayers("job", jobs)
+    for group, players in pairs(groupedPlayers) do
+        for i, xPlayer in ipairs(players) do
+            if xPlayer.job.name == group then
+                count += 1
+            end
+        end
+    end
+    return count
+end
+
+function bridge.hasJobs(src, groups)
+    if not groups then return end
+
+    local player = ESX.GetPlayerFromId(src)
+    local job = player.getJob().name
+
+    for i=1, #groups do
+        if job == groups[i] then
+            return true
+        end
+    end
+end
+
 function bridge.revivePlayer(src)
     TriggerClientEvent("ND_Ambulance:revivePlayer", src)
     local xPlayer = ESX.GetPlayerFromId(src)
@@ -58,7 +85,7 @@ lib.addCommand("revive", {
         }
     }
 }, function(src, args, raw)
-    bridge.revivePlayer(src)
+    bridge.revivePlayer(args.target)
 end)
 
 return bridge

@@ -10,6 +10,7 @@ end)
 
 RegisterNetEvent("ND:characterLoaded", function(character)
     player = character
+    TriggerEvent("ND_Ambulance:playerLoaded", player)
 end)
 
 RegisterNetEvent("ND:updateCharacter", function(character)
@@ -25,11 +26,19 @@ function bridge.notify(data)
 end
 
 function bridge.createAiPed(info)
-    NDCore.createAiPed(info)
+    return NDCore.createAiPed(info)
+end
+
+function bridge.removeAiPed(id)
+    NDCore.removeAiPed(id)
 end
 
 function bridge.isDead()
     return player and player.metadata.dead
+end
+
+function bridge.sinceDeath()
+    return player?.metadata?.deathInfo?.timestamp
 end
 
 return bridge
