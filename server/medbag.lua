@@ -2,7 +2,8 @@ local bagEntities = {}
 local bagInventories = {}
 local medBagItemsWeight = 0
 local defaultMedbagWeight = 0
-local medBagItems = require("data.medbag")
+local data_medbag = require("data.medbag")
+local medBagItems = data_medbag.defaultItems
 
 for item, data in pairs(exports.ox_inventory:Items()) do
     if item == medbag then
@@ -93,8 +94,8 @@ local function usingBag(inventory, slot, netId)
     if not bagInventories[stashId] then
         stashId = exports.ox_inventory:CreateTemporaryStash({
             label = locale("medbag_stash_label"),
-            slots = 10,
-            maxWeight = 7000,
+            slots = data_medbag.slots,
+            maxWeight = data_medbag.maxWeight,
             items = medBagItems
         })
     end
